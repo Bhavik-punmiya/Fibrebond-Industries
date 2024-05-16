@@ -1,0 +1,20 @@
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust minmax value as needed */
+    gap: 1rem;
+    padding: 0 1rem; /* Optional: Adds some padding around the grid */
+  }
+  
+  /* Responsive adjustments */
+  @media (min-width: 1024px) { /* Adjust this breakpoint as needed */
+   .product-grid {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust minmax value as needed */
+    }
+  }
+  
+  @media (max-width: 1023px) {
+   .product-grid {
+      grid-template-columns: 1fr; /* Single column layout on smaller screens */
+    }
+  }
+  

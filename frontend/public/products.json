@@ -1,0 +1,47 @@
+{}
+    {
+      id: 1,
+      name: 'Belt for Men with Auto lock Buckle',
+      href: '#',
+      imageSrc: 'https://i0.wp.com/fibrebondindustries.com/wp-content/uploads/2023/10/1.png?fit=1324%2C1368&ssl=1',
+      imageAlt: "Belt for Men with Auto lock Buckle",
+      price: '₹44',
+      color: 'Black',
+    },
+    {
+      id: 2,
+      name: 'Elastic Stretchable And Adjustable Belt For Men',
+      href: '#',
+      imageSrc: 'https://i0.wp.com/fibrebondindustries.com/wp-content/uploads/2023/10/2-1.png?fit=1620%2C1620&ssl=1',
+      imageAlt: "Belt for Men with Auto lock Buckle",
+      price: '₹44',
+      color: 'Black',
+    },
+    {
+      id: 3,
+      name: 'Men’s Reversible TPU Leather Belt',
+      href: '#',
+      imageSrc: 'https://i0.wp.com/fibrebondindustries.com/wp-content/uploads/2023/10/3-1.png?fit=1080%2C1080&ssl=1',
+      imageAlt: "Belt for Men with Auto lock Buckle",
+      price: '₹44',
+      color: 'Black',
+    },
+    {
+      id: 4,
+      name: 'Reversible PU Leather Formal Belt For Men',
+      href: '#',
+      imageSrc: 'https://i0.wp.com/fibrebondindustries.com/wp-content/uploads/2023/10/4-1.png?fit=1080%2C1080&ssl=1',
+      imageAlt: "Belt for Men with Auto lock Buckle",
+      price: '₹44',
+      color: 'Black',
+    },
+    {
+      id: 5,
+      name: 'Urban Spanish Leather For Men',
+      href: '#',
+      imageSrc: 'https://i0.wp.com/fibrebondindustries.com/wp-content/uploads/2023/10/5-1.png?fit=741%2C721&ssl=1',
+      imageAlt: "Belt for Men with Auto lock Buckle",
+      price: '₹44',
+      color: 'Black',
+    }
+}
