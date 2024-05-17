@@ -154,7 +154,6 @@ const products = [
             ))}
           </div>
         </div>
-        <FooterComponent/>
       </div>
 
     )
