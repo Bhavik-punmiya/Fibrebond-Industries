@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useState } from "react";
 export default function index() {
     const [dropdown1, setDropdown1] = useState(false);
