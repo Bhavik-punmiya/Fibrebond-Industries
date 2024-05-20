@@ -9,7 +9,7 @@ const connectDB = require('./db/connect');
 
 // Routes
 const orderRouter = require('./routes/orderRoutes');
-
+const productRouter = require('./routes/productRoutes');  
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
@@ -17,8 +17,8 @@ const errorHandlerMiddleware = require('./middleware/error-handler');
 app.use(express.json()); // Parse JSON bodies
 
 // Attach routes
-app.use('/api/v1/orders', orderRouter); // Ensure this matches the prefix in your routes
-
+app.use('/api/v1/orders', orderRouter); 
+app.use('/api/v1/products', productRouter);
 // Error handling middleware
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
