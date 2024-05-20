@@ -1,0 +1,104 @@
+[
+    {
+      "user": "userId1",
+      "orderItems": [
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b8b8",
+          "quantity": 1
+        },
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b9b9",
+          "quantity": 2
+        }
+      ],
+      "subtotal": 100,
+      "tax": 10,
+      "shippingFee": 5,
+      "total": 115,
+      "isPaid": false,
+      "paidAt": null,
+      "isDelivered": false,
+      "deliveredAt": null
+    },
+    {
+      "user": "userId2",
+      "orderItems": [
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b8b8",
+          "quantity": 1
+        },
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b9b9",
+          "quantity": 1
+        }
+      ],
+      "subtotal": 50,
+      "tax": 5,
+      "shippingFee": 2.5,
+      "total": 57.5,
+      "isPaid": false,
+      "paidAt": null,
+      "isDelivered": false,
+      "deliveredAt": null
+    },
+    {
+      "user": "userId3",
+      "orderItems": [
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b8b8",
+          "quantity": 2
+        }
+      ],
+      "subtotal": 80,
+      "tax": 8,
+      "shippingFee": 4,
+      "total": 92,
+      "isPaid": false,
+      "paidAt": null,
+      "isDelivered": false,
+      "deliveredAt": null
+    },
+    {
+      "user": "userId4",
+      "orderItems": [
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b8b8",
+          "quantity": 1
+        },
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b9b9",
+          "quantity": 1
+        }
+      ],
+      "subtotal": 55,
+      "tax": 5.5,
+      "shippingFee": 2.75,
+      "total": 63.25,
+      "isPaid": false,
+      "paidAt": null,
+      "isDelivered": false,
+      "deliveredAt": null
+    },
+    {
+      "user": "userId5",
+      "orderItems": [
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b8b8",
+          "quantity": 1
+        },
+        {
+          "productId": "60c6f5a2e4b0e8c2a8b2b9b9",
+          "quantity": 1
+        }
+      ],
+      "subtotal": 50,
+      "tax": 5,
+      "shippingFee": 2.5,
+      "total": 57.5,
+      "isPaid": false,
+      "paidAt": null,
+      "isDelivered": false,
+      "deliveredAt": null
+    }
+  ]
+  
