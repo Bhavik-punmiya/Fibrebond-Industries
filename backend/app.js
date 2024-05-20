@@ -10,6 +10,8 @@ const connectDB = require('./db/connect');
 // Routes
 const orderRouter = require('./routes/orderRoutes');
 const productRouter = require('./routes/productRoutes');  
+const customerRouter = require('./routes/customerRoutes');
+
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
@@ -19,6 +21,8 @@ app.use(express.json()); // Parse JSON bodies
 // Attach routes
 app.use('/api/v1/orders', orderRouter); 
 app.use('/api/v1/products', productRouter);
+app.use('/api/v1/customers', customerRouter); 
+
 // Error handling middleware
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

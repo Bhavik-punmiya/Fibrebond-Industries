@@ -1,0 +1,51 @@
+[
+    {
+      "customerID": "CUST001",
+      "userID": "6137f3dab3e036001b3d3c2b",
+      "name": "John Doe",
+      "shippingAddresses": [
+        {
+          "address": "123 Main St",
+          "type": "home"
+        }
+      ],
+      "phone": "1234567890",
+      "email": "john@example.com",
+      "orderHistory": [],
+      "totalOrderValue": 0,
+      "numberOfOrders": 0
+    },
+    {
+      "customerID": "CUST002",
+      "userID": "6137f3dab3e036001b3d3c2b",
+      "name": "Jane Smith",
+      "shippingAddresses": [
+        {
+          "address": "456 Elm St",
+          "type": "office"
+        }
+      ],
+      "phone": "9876543210",
+      "email": "jane@example.com",
+      "orderHistory": [],
+      "totalOrderValue": 0,
+      "numberOfOrders": 0
+    },
+    {
+      "customerID": "CUST003",
+      "userID": "6137f3dab3e036001b3d3c2b",
+      "name": "Alice Johnson",
+      "shippingAddresses": [
+        {
+          "address": "789 Oak St",
+          "type": "home"
+        }
+      ],
+      "phone": "1112223333",
+      "email": "alice@example.com",
+      "orderHistory": [],
+      "totalOrderValue": 0,
+      "numberOfOrders": 0
+    }
+  ]
+  
