@@ -1,27 +1,19 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation'; // Import useRouter hook
-
-export default function LoginForm() {
+import axios from 'axios'
+export default function Register() {
+  const [username, setUsername] = useState(''); // New state variable for username
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const router = useRouter(); // Initialize useRouter hook
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
-      setMessage(res.data.message);
-      // Redirect logic if login successful
+      const res = await axios.post('/api/auth/register', { name: username, email, password }); // Make a POST request to the registration endpoint
+      setMessage(res.data.message); // Set the message received from the server
     } catch (error) {
-      setMessage(error.response.data.message);
+      setMessage(error.response.data.message); // Set the error message received from the server
     }
-  };
-
-  // Function to handle redirection to register page
-  const redirectToRegister = () => {
-    router.push('/register'); // Redirect to /register page
   };
 
   return (
@@ -34,12 +26,32 @@ export default function LoginForm() {
             alt="Your Company"
           />
           <h2 className="mt-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-            Sign in to your account
+            Create a New Account
           </h2>
         </div>
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" action="#" method="POST" onSubmit={handleSubmit}>
+        <div className="mt-4 sm:mx-auto sm:w-full sm:max-w-sm">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Username Field */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
+                Username
+              </label>
+              <div className="mt-2">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
+            </div>
+
+            {/* Existing Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                 Email address
@@ -58,6 +70,7 @@ export default function LoginForm() {
               </div>
             </div>
 
+            {/* Existing Password Field */}
             <div>
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
@@ -83,6 +96,7 @@ export default function LoginForm() {
               </div>
             </div>
 
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"
@@ -94,9 +108,9 @@ export default function LoginForm() {
           </form>
 
           <p className="mt-10 text-center text-sm text-gray-500">
-            Not a member?{' '}
-            <a href="/register" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500" >
-              Register
+            Already Have a Account?{' '}
+            <a href="/login" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
+                Sign in 
             </a>
           </p>
         </div>

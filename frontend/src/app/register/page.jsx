@@ -1,11 +1,11 @@
 "use client";
 import React from 'react';
-import LoginForm from '../components/LoginComponent';
+import RegisterForm  from '../components/RegisterForm';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className='bg-white min-h-screen flex items-center'>
-      <LoginForm />
+      <RegisterForm />
     </div>
   );
 }
