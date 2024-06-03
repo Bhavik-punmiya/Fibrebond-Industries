@@ -24,6 +24,7 @@
     "dotenv": "^16.4.5",
     "flatpickr": "^4.6.13",
     "framer-motion": "^11.2.6",
+    "jsonwebtoken": "^9.0.2",
     "jsvectormap": "^1.5.3",
     "mongoose": "^8.4.1",
     "next-auth": "^4.24.7",
