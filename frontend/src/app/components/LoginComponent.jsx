@@ -1,31 +1,52 @@
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [user, setUser] = useState(null); // Add this line
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (res.ok) {
-      setMessage('Login successful!');
-      router.push('/dashboard'); // Redirect to a protected route after successful login
-    } else {
-      setMessage(res.error || 'Login failed');
+      if (response.ok) {
+        const { token, user } = await response.json();
+        toast.success("User Login Successfully", {position: "top-center",}); 
+        localStorage.setItem('authToken', token);
+        // Update the user information in the application state
+        setUser(user); // Update the user state
+        setMessage('Login successful!');
+        setTimeout(() => {
+          router.push('/shop'); // Redirect to a protected route after successful login
+        }, 2000); // Redirect to a protected route after successful login
+      } else {
+        const { message } = await response.json();
+        toast.error(message, {position: "top-center",})
+        setMessage(message);
+      }
+    } catch (err) {
+      console.error('Error logging in:', err);
+      toaster.error('Login Failed', {position: "top-center",})
+      setMessage('An error occurred during login');
     }
   };
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <ToastContainer position="top-center" />
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
           className="mx-auto h-12 w-auto"

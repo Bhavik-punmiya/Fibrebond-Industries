@@ -1,72 +1,43 @@
-// models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  userID: {
+  name: {
     type: String,
     required: true,
     unique: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  shippingAddresses: [
-    {
-      address: {
-        type: String,
-        required: true
-      },
-      type: {
-        type: String,
-        enum: ['home', 'office', 'work'],
-        required: true
-      }
-    }
-  ],
-  phone: {
-    type: String,
-    required: false
   },
   email: {
     type: String,
-    required: true,
-    unique: true
+    unique: true,
+    sparse: true // Allow either email or phone to be optional
   },
-  orderHistory: [
-    {
-      orderId: {
-        type: String,
-        ref: 'Order',
-        required: true
-      },
-      orderDate: {
-        type: Date,
-        required: true
-      },
-      totalOrderValue: {
-        type: Number,
-        required: true
-      }
-    }
-  ],
-  totalOrderValue: {
-    type: Number,
-    default: 0
-  },
-  numberOfOrders: {
-    type: Number,
-    default: 0
-  },
-  role: {
+  phone: {
     type: String,
-    enum: ['admin', 'customer', 'shopmanager'],
-    default: 'customer'
+    unique: true,
+    sparse: true // Allow either phone or email to be optional
   },
   password: {
     type: String,
     required: true
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'shopmanager', 'customer'],
+    default: 'customer'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
+});
+
+// Custom validation to ensure either email or phone is provided
+userSchema.pre('validate', function(next) {
+  if (!this.email && !this.phone) {
+    this.invalidate('email', 'Either email or phone number is required');
+    this.invalidate('phone', 'Either email or phone number is required');
+  }
+  next();
 });
 
 // Check if the model already exists before defining it

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-require('dotenv').config();
+
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
@@ -8,6 +8,11 @@ if (!MONGODB_URI) {
   );
 }
 
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections growing exponentially
+ * during API Route usage.
+ */
 let cached = global.mongoose;
 
 if (!cached) {
@@ -20,14 +25,15 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    const opts = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    }).then((mongoose) => {
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });
   }
-
   cached.conn = await cached.promise;
   return cached.conn;
 }
