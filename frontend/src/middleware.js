@@ -6,7 +6,7 @@ export async function middleware(req) {
   const cookies = req.headers.get('cookie') ? parse(req.headers.get('cookie')) : {};
   const token = cookies.authToken;
 
-  console.log('Token:', token); // Debugging line
+  // console.log('Token:', token); // gging line
 
   if (/\/_next\//.test(pathname)) {
     return NextResponse.next();

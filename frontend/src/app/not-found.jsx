@@ -1,8 +1,10 @@
 export default function Example() {
-    return (
-      <>
-        <html className="h-screen"> {/* Ensure the HTML element takes up the full viewport height */}
-        <body className="flex flex-col h-screen"> {/* Use Flexbox to make the body take up the full height */}
+  return (
+    <>
+      {/* Ensure the HTML and body elements take up the full viewport height */}
+      <html className="h-full">
+        <body className="flex flex-col min-h-full">
+          {/* Use Flexbox to make the main element grow and fill the remaining space */}
           <main className="flex-grow grid place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
             <div className="text-center">
               <p className="text-base font-semibold text-indigo-600">404</p>
@@ -22,8 +24,7 @@ export default function Example() {
             </div>
           </main>
         </body>
-        </html>
-      </>
-    );
-  }
-  
+      </html>
+    </>
+  );
+}
