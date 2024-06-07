@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-// Define individual schemas
 const BillingAddressSchema = new Schema({
   firstName: String,
   lastName: String,
@@ -47,15 +46,15 @@ const PaymentInfoSchema = new Schema({
   ],
 });
 
-// Define the main User schema
-const UserSchema = new Schema({
-  _id: Schema.Types.ObjectId,
-  firstName: String,
-  lastName: String,
+const CustomerSchema = new Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, unique: true, sparse: true },
+  phoneNumber: { type: String, unique: true, sparse: true },
+  password: { type: String, required: true },
   familyName: String,
-  role: String,
+  role: { type: String, enum: ['admin', 'shopmanager', 'customer'], default: 'customer' },
   username: String,
-  email: { type: String, unique: true, required: true },
   avatarUrl: String,
   isPayingCustomer: Boolean,
   billingAddress: BillingAddressSchema,
@@ -63,12 +62,10 @@ const UserSchema = new Schema({
   orders: [String], // Array of order IDs as strings
   taxInformation: TaxInformationSchema,
   paymentInfo: PaymentInfoSchema,
-  dateCreated: Date,
-  dateModified: Date,
+  dateCreated: { type: Date, default: Date.now },
+  dateModified: { type: Date, default: Date.now },
 });
 
-// Create models from the schemas
-const User = mongoose.model('User', UserSchema);
+const Customer = mongoose.model('Customer', CustomerSchema);
 
-// Export the models
-module.exports = { User };
+module.exports = Customer;

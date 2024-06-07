@@ -1,8 +1,6 @@
 const Customer = require('../models/Customer');
 const { StatusCodes } = require('http-status-codes');
 const CustomError = require('../errors');
-const fs = require('fs');
-const path = require('path');
 
 // @desc    Get all customers
 // @route   GET /api/v1/customers
@@ -34,31 +32,62 @@ const getCustomerById = async (req, res) => {
 
 // @desc    Create a new customer
 // @route   POST /api/v1/customers
-// @access  Private (Admin)
+// @access  Public
 const createCustomer = async (req, res) => {
   try {
-    const customer = await Customer.create(req.body);
+    const { firstName, lastName, email, phoneNumber, password } = req.body;
+
+    // Check if the customer already exists
+    const existingCustomer = await Customer.findOne({ $or: [{ email }, { phoneNumber }] });
+    if (existingCustomer) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Customer already exists' });
+    }
+
+    const customer = new Customer({
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      password,  // Assuming you handle password hashing elsewhere
+    });
+
+    await customer.save();
     res.status(StatusCodes.CREATED).json({ customer });
   } catch (error) {
     res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
 
-// @desc    Update a customer by ID
-// @route   PATCH /api/v1/customers/:id
-// @access  Private (Admin)
+// @desc    Update a customer by email or phone number
+// @route   PATCH /api/v1/customers
+// @access  Private (Customer)
+// @desc    Update a customer by email or phone number
+// @route   PATCH /api/v1/customers
+// @access  Private (Customer)
 const updateCustomer = async (req, res) => {
-  const { id: customerId } = req.params;
+  const { email, phoneNumber } = req.body;
+
   try {
-    const customer = await Customer.findByIdAndUpdate(customerId, req.body, { new: true, runValidators: true });
+    // Find the customer by email or phone number
+    const customer = await Customer.findOne({ $or: [{ email }, { phoneNumber }] });
     if (!customer) {
-      throw new CustomError.NotFoundError(`Customer with ID ${customerId} not found`);
+      throw new CustomError.NotFoundError(`Customer not found`);
     }
+
+    // Update the customer with new details
+    const updateData = { ...req.body };
+
+    Object.keys(updateData).forEach((key) => {
+      customer[key] = updateData[key];
+    });
+
+    await customer.save();
     res.status(StatusCodes.OK).json({ customer });
   } catch (error) {
     res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
+
 
 // @desc    Delete a customer by ID
 // @route   DELETE /api/v1/customers/:id

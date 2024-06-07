@@ -8,43 +8,7 @@ const PersonalDetailsForm = () => {
   const countries = countriesData;
   const phoneInputRef = useRef(null);
 
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    billingAddress: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      addressLine1: '',
-      addressLine2: '',
-      city: '',
-      region: '',
-      postalCode: '',
-    },
-    shippingAddress: {
-      sameAsBilling: false,
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      addressLine1: '',
-      addressLine2: '',
-      city: '',
-      region: '',
-      postalCode: '',
-    },
-    taxInformation: {
-      gstNumber: '',
-      gstName: '',
-      gstType: '',
-      panNumber: '',
-    },
-    document: null,
-    termsAccepted: false,
-  });
+  const [formData, setFormData] = useState(3);
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
