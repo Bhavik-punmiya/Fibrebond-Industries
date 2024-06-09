@@ -51,7 +51,6 @@ const CustomerSchema = new Schema({
   lastName: { type: String, required: true },
   email: { type: String, unique: true, sparse: true },
   phoneNumber: { type: String, unique: true, sparse: true },
-  password: { type: String, required: true },
   familyName: String,
   role: { type: String, enum: ['admin', 'shopmanager', 'customer'], default: 'customer' },
   username: String,
@@ -62,6 +61,8 @@ const CustomerSchema = new Schema({
   orders: [String], // Array of order IDs as strings
   taxInformation: TaxInformationSchema,
   paymentInfo: PaymentInfoSchema,
+  profilePictureUrl: String, // Field to store the URL or path of the profile picture
+  documentUrl: String, // Field to store the URL or path of the document
   dateCreated: { type: Date, default: Date.now },
   dateModified: { type: Date, default: Date.now },
 });

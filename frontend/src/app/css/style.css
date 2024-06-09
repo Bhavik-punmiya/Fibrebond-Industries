@@ -13,8 +13,12 @@
 @layer components {
 }
 
+
 @layer utilities {
     /* Chrome, Safari and Opera */
+    .z-1 {
+        z-index: 1;
+    }
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }

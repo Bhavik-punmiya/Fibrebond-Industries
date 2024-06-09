@@ -5,8 +5,7 @@ const upload = require('../utils/multerConfig');
 const {
   getAllCustomers,
   getCustomerById,
-  createCustomer,
-  updateCustomer,
+  createOrUpdateCustomer,
   deleteCustomer,
   uploadAllCustomers,
 } = require('../controllers/customerController');
@@ -17,11 +16,11 @@ router.get('/', getAllCustomers);
 // GET single customer by ID
 router.get('/:id', getCustomerById);
 
-// POST create a new customer
-router.post('/', createCustomer);
+// POST create or update a customer
+router.post('/', createOrUpdateCustomer);
 
-// PATCH update a customer by ID
-router.patch('/:id', updateCustomer);
+// PATCH update a customer by ID (this route can be omitted if using createOrUpdateCustomer for both create and update)
+router.patch('/:id', createOrUpdateCustomer);
 
 // DELETE delete a customer by ID
 router.delete('/:id', deleteCustomer);

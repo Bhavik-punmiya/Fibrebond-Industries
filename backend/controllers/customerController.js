@@ -1,7 +1,10 @@
+const User = require('../models/UserSchema');
 const Customer = require('../models/Customer');
 const { StatusCodes } = require('http-status-codes');
 const CustomError = require('../errors');
-
+const fs = require('fs');
+const path = require('path');
+const { ObjectId } = require('mongodb')
 // @desc    Get all customers
 // @route   GET /api/v1/customers
 // @access  Public
@@ -30,64 +33,64 @@ const getCustomerById = async (req, res) => {
   }
 };
 
-// @desc    Create a new customer
-// @route   POST /api/v1/customers
-// @access  Public
-const createCustomer = async (req, res) => {
+const createOrUpdateCustomer = async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNumber, password } = req.body;
+    const { email, phoneNumber } = req.body;
 
-    // Check if the customer already exists
-    const existingCustomer = await Customer.findOne({ $or: [{ email }, { phoneNumber }] });
-    if (existingCustomer) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Customer already exists' });
+    // Find the user by email or phone number
+    const user = await User.findOne({ $or: [{ email }, { phone: phoneNumber }] });
+    console.log("User found:", user._id.toString());
+    
+    if (!user) {
+      throw new CustomError.NotFoundError('User not found');
     }
 
-    const customer = new Customer({
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      password,  // Assuming you handle password hashing elsewhere
-    });
+    // Check if a customer record already exists for this user
+    let customer = await Customer.findOne({ _id: user._id });
+    console.log("Existing customer:", customer);
 
-    await customer.save();
-    res.status(StatusCodes.CREATED).json({ customer });
+    if (customer) {
+      console.log("Updating existing customer...");
+      // Update existing customer
+      Object.keys(req.body).forEach((key) => {
+        customer[key] = req.body[key];
+      });
+      await customer.save();
+    } else {
+      console.log('Creating new customer...');
+      // Create a new customer
+      // const id = new ObjectId(user._id.toString());
+      customer = new Customer({
+        _id: user._id,
+        ...req.body
+      });
+      await customer.save();
+    }
+
+    res.status(StatusCodes.OK).json({ customer });
   } catch (error) {
+    console.error("Error creating or updating customer:", error.message);
     res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
 
-// @desc    Update a customer by email or phone number
-// @route   PATCH /api/v1/customers
-// @access  Private (Customer)
-// @desc    Update a customer by email or phone number
-// @route   PATCH /api/v1/customers
-// @access  Private (Customer)
+
+
+// @desc    Update a customer by ID
+// @route   PATCH /api/v1/customers/:id
+// @access  Private (Admin)
 const updateCustomer = async (req, res) => {
-  const { email, phoneNumber } = req.body;
-
+  const { id: customerId } = req.params;
   try {
-    // Find the customer by email or phone number
-    const customer = await Customer.findOne({ $or: [{ email }, { phoneNumber }] });
+    const customer = await Customer.findByIdAndUpdate(customerId, req.body, { new: true, runValidators: true });
     if (!customer) {
-      throw new CustomError.NotFoundError(`Customer not found`);
+      throw new CustomError.NotFoundError(`Customer with ID ${customerId} not found`);
     }
-
-    // Update the customer with new details
-    const updateData = { ...req.body };
-
-    Object.keys(updateData).forEach((key) => {
-      customer[key] = updateData[key];
-    });
-
-    await customer.save();
     res.status(StatusCodes.OK).json({ customer });
   } catch (error) {
     res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
-
 
 // @desc    Delete a customer by ID
 // @route   DELETE /api/v1/customers/:id
@@ -123,7 +126,7 @@ const uploadAllCustomers = async (req, res) => {
 module.exports = {
   getAllCustomers,
   getCustomerById,
-  createCustomer,
+  createOrUpdateCustomer,
   updateCustomer,
   deleteCustomer,
   uploadAllCustomers,

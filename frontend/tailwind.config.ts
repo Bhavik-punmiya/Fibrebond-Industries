@@ -345,7 +345,9 @@ const config: Config = {
   },
   
   plugins: [
-    addVariablesForColors],
+    addVariablesForColors,
+    require('@tailwindcss/forms')
+  ],
 };
 
 function addVariablesForColors({ addBase, theme }: any) {

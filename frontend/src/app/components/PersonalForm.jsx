@@ -8,78 +8,142 @@ const PersonalDetailsForm = () => {
   const countries = countriesData;
   const phoneInputRef = useRef(null);
 
-  const [formData, setFormData] = useState(3);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    billingAddress: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      region: '',
+      postalCode: '',
+    },
+    shippingAddress: {
+      sameAsBilling: false,
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      region: '',
+      postalCode: '',
+    },
+    taxInformation: {
+      gstNumber: '',
+      gstName: '',
+      gstType: '',
+      panNumber: '',
+    },
+    document: null,
+    termsAccepted: false,
+  });
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
-  
+
     // Update the formData state based on the checkbox change
     setFormData((prevFormData) => {
       // Clone the prevFormData to avoid direct mutation
-      const updatedFormData = {...prevFormData };
-  
+      const updatedFormData = { ...prevFormData };
+
       // Update the shippingAddress object based on the checkbox state
       if (name === 'shippingAddress.sameAsBilling') {
         updatedFormData.shippingAddress = {
-         ...updatedFormData.shippingAddress,
+          ...updatedFormData.shippingAddress,
           sameAsBilling: checked,
           // Reset or update other fields in shippingAddress as needed
-          firstName: checked? prevFormData.billingAddress.firstName : '',
-          lastName: checked? prevFormData.billingAddress.lastName : '',
-          email: checked? prevFormData.billingAddress.email : '',
-          phoneNumber: checked? prevFormData.billingAddress.phoneNumber : '',
-          addressLine1: checked? prevFormData.billingAddress.addressLine1 : '',
-          addressLine2: checked? prevFormData.billingAddress.addressLine2 : '',
-          city: checked? prevFormData.billingAddress.city : '',
-          region: checked? prevFormData.billingAddress.region : '',
-          postalCode: checked? prevFormData.billingAddress.postalCode : '',
+          firstName: checked ? prevFormData.billingAddress.firstName : '',
+          lastName: checked ? prevFormData.billingAddress.lastName : '',
+          email: checked ? prevFormData.billingAddress.email : '',
+          phoneNumber: checked ? prevFormData.billingAddress.phoneNumber : '',
+          addressLine1: checked ? prevFormData.billingAddress.addressLine1 : '',
+          addressLine2: checked ? prevFormData.billingAddress.addressLine2 : '',
+          city: checked ? prevFormData.billingAddress.city : '',
+          region: checked ? prevFormData.billingAddress.region : '',
+          postalCode: checked ? prevFormData.billingAddress.postalCode : '',
         };
       }
-  
+
       return updatedFormData;
     });
   };
-  
-  
+
+
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-  
+
     // Split the name into an array of keys
     const nameKeys = name.split('.');
-  
+
     // Create a copy of the current state
     setFormData((prevFormData) => {
       // Create a reference to the current level of the form data
       let formDataRef = prevFormData;
-  
+
       // Traverse the nested structure until the second last key
       for (let i = 0; i < nameKeys.length - 1; i++) {
         formDataRef = formDataRef[nameKeys[i]];
       }
-  
+
       // Update the value of the last key in the nested structure
       formDataRef[nameKeys[nameKeys.length - 1]] = value;
-  
+
       // Return the updated state
       return { ...prevFormData };
     });
   };
-  
-  
+
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0]; // Get the selected file
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      photo: file, // Update the photo property in the form data
+    }));
+  };
 
 
   const handleDocumentUpload = (e) => {
     const file = e.target.files[0]; // Get the first file from the selected files
+    console.log(file)
     setFormData({
       ...formData,
       document: file, // Update the document property in the state with the selected file
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData)
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Error: ${errorMessage}`);
+      }
+
+      const data = await response.json();
+      console.log('Customer created:', data.customer); // Log the created customer data
+      // You can add further logic here, such as redirecting the user or showing a success message
+    } catch (error) {
+      console.error('Error creating customer:', error.message);
+      // You can handle errors here, such as displaying an error message to the user
+    }
   };
 
   useEffect(() => {
@@ -102,21 +166,29 @@ const PersonalDetailsForm = () => {
         <div className="space-y-12">
           <div className="border-b border-gray-900/10 pb-12">
 
-
             <div className="col-span-full">
               <label htmlFor="photo" className="block text-sm font-medium leading-6 text-gray-900">
                 Profile Photo
               </label>
               <div className="mt-2 flex items-center gap-x-3">
+                <input
+                  type="file"
+                  id="photo"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoChange} // Add an onChange event handler
+                />
                 <UserCircleIcon className="h-12 w-12 text-gray-300" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                <label
+                  htmlFor="photo"
+                  className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 cursor-pointer"
                 >
                   Change
-                </button>
+                </label>
               </div>
             </div>
+
+
             <div className="border-b border-gray-900/10 pb-12">
               <h2 className="text-base mt-5 font-semibold leading-7 text-gray-900">Personal Information</h2>
               <p className="mt-1 text-sm leading-6 text-gray-600">Please provide your contact details</p>
@@ -684,7 +756,7 @@ const PersonalDetailsForm = () => {
                         className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
                       >
                         <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload"  onChange={handleDocumentUpload} type="file" className="sr-only" />
+                        <input id="file-upload" name="file-upload" onChange={handleDocumentUpload} type="file" className="sr-only" />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>
@@ -701,7 +773,7 @@ const PersonalDetailsForm = () => {
             id="terms-and-conditions"
             name="termsAccepted"
             type="checkbox"
-              checked={formData.termsAccepted}
+            checked={formData.termsAccepted}
             onChange={handleChange}
             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
             required

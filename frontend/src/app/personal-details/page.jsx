@@ -31,10 +31,10 @@ const PersonalDetailsPage = () => {
   return (
     <div className="flex flex-col items-center justify-center bg-gray-100 min-h-screen">
       <div className="flex justify-between w-full max-w-8xl p-14">
-        <div className="bg-white w-1/4 mr-8 p-10 border-4 rounded-3xl">
+        <div className="bg-white w-1/4 mr-8 p-10 border-0 rounded-3xl">
           {/* Content for the first smaller div */}
         </div>
-        <div className="bg-white w-3/4 p-20 border-4 rounded-3xl">
+        <div className="bg-white w-3/4 p-20 border-0 rounded-3xl">
           {!isEditMode ? (
             <button
               onClick={handleEditClick}
