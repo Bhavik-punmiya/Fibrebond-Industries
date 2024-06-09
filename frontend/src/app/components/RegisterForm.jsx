@@ -1,24 +1,33 @@
 import React, { useState } from 'react';
-import axios from 'axios'
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 export default function Register() {
-  const [username, setUsername] = useState(''); // New state variable for username
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/register', { name: username, email, password }); // Make a POST request to the registration endpoint
-      toast.success(res.data.message, {position: "top-center",}); 
-      setMessage(res.data.message); // Set the message received from the server
+      const res = await axios.post('/api/auth/register', { name: username, email, password });
+      toast.success(res.data.message, { position: "top-center" });
+
+      // Save email in browser storage
+      localStorage.setItem('email', email);
+
+      setMessage(res.data.message);
+
+      // Redirect to the shop page
+      router.push('/shop');
     } catch (error) {
-      setMessage(error.response.data.message); // Set the error message received from the server
+      setMessage(error.response.data.message);
     }
   };
-
   return (
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">

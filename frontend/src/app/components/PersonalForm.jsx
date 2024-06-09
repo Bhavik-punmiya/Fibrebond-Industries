@@ -1,5 +1,4 @@
-"use client";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import countriesData from '../../../public/countries.json';
 import 'intl-tel-input/build/css/intlTelInput.css';
@@ -7,7 +6,6 @@ import 'intl-tel-input/build/css/intlTelInput.css';
 const PersonalDetailsForm = () => {
   const countries = countriesData;
   const phoneInputRef = useRef(null);
-
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -43,93 +41,79 @@ const PersonalDetailsForm = () => {
       panNumber: '',
     },
     document: null,
+    photo: null,
     termsAccepted: false,
   });
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
 
-    // Update the formData state based on the checkbox change
-    setFormData((prevFormData) => {
-      // Clone the prevFormData to avoid direct mutation
-      const updatedFormData = { ...prevFormData };
-
-      // Update the shippingAddress object based on the checkbox state
-      if (name === 'shippingAddress.sameAsBilling') {
-        updatedFormData.shippingAddress = {
-          ...updatedFormData.shippingAddress,
-          sameAsBilling: checked,
-          // Reset or update other fields in shippingAddress as needed
-          firstName: checked ? prevFormData.billingAddress.firstName : '',
-          lastName: checked ? prevFormData.billingAddress.lastName : '',
-          email: checked ? prevFormData.billingAddress.email : '',
-          phoneNumber: checked ? prevFormData.billingAddress.phoneNumber : '',
-          addressLine1: checked ? prevFormData.billingAddress.addressLine1 : '',
-          addressLine2: checked ? prevFormData.billingAddress.addressLine2 : '',
-          city: checked ? prevFormData.billingAddress.city : '',
-          region: checked ? prevFormData.billingAddress.region : '',
-          postalCode: checked ? prevFormData.billingAddress.postalCode : '',
-        };
-      }
-
-      return updatedFormData;
-    });
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      shippingAddress: {
+        ...prevFormData.shippingAddress,
+        sameAsBilling: checked,
+        ...(checked && { ...prevFormData.billingAddress }),
+      },
+    }));
   };
-
-
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
-    // Split the name into an array of keys
     const nameKeys = name.split('.');
 
-    // Create a copy of the current state
     setFormData((prevFormData) => {
-      // Create a reference to the current level of the form data
       let formDataRef = prevFormData;
 
-      // Traverse the nested structure until the second last key
       for (let i = 0; i < nameKeys.length - 1; i++) {
         formDataRef = formDataRef[nameKeys[i]];
       }
 
-      // Update the value of the last key in the nested structure
       formDataRef[nameKeys[nameKeys.length - 1]] = value;
 
-      // Return the updated state
       return { ...prevFormData };
     });
   };
 
-
   const handlePhotoChange = (e) => {
-    const file = e.target.files[0]; // Get the selected file
+    const file = e.target.files[0];
     setFormData((prevFormData) => ({
       ...prevFormData,
-      photo: file, // Update the photo property in the form data
+      photo: file,
     }));
   };
 
-
   const handleDocumentUpload = (e) => {
-    const file = e.target.files[0]; // Get the first file from the selected files
-    console.log(file)
-    setFormData({
-      ...formData,
-      document: file, // Update the document property in the state with the selected file
-    });
+    const file = e.target.files[0];
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      document: file,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Create a FormData object and append all form data except photo and document
+    const formDataObj = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== 'photo' && key !== 'document') {
+        formDataObj.append(key, value);
+      }
+    });
+
+    // Append photo and document separately
+    if (formData.photo) {
+      formDataObj.append('photo', formData.photo);
+    }
+    if (formData.document) {
+      formDataObj.append('document', formData.document);
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/v1/customers', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formDataObj,
       });
 
       if (!response.ok) {
@@ -138,11 +122,9 @@ const PersonalDetailsForm = () => {
       }
 
       const data = await response.json();
-      console.log('Customer created:', data.customer); // Log the created customer data
-      // You can add further logic here, such as redirecting the user or showing a success message
+      console.log('Customer created:', data.customer);
     } catch (error) {
       console.error('Error creating customer:', error.message);
-      // You can handle errors here, such as displaying an error message to the user
     }
   };
 
@@ -160,6 +142,7 @@ const PersonalDetailsForm = () => {
 
     loadIntlTelInput();
   }, []);
+
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -756,7 +739,12 @@ const PersonalDetailsForm = () => {
                         className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
                       >
                         <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" onChange={handleDocumentUpload} type="file" className="sr-only" />
+                        <input id="file-upload"
+                        name="document"
+                        value={formData.document}
+                        onChange={handleDocumentUpload} 
+                        type="file" 
+                        className="sr-only" />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>

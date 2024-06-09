@@ -1,9 +1,9 @@
-// src/api/auth/register.js
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/Users';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-
+import jwt from 'jsonwebtoken';
+import { serialize } from 'cookie';
 
 export default async function handler(req, res) {
   await dbConnect();
@@ -25,8 +25,17 @@ export default async function handler(req, res) {
         password: hashedPassword,
       });
 
+      // Generate a JWT token without expiration
+      const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, process.env.NEXTAUTH_SECRET);
+
+      // Store the token in the user's document
+      user.jwtToken = token;
       await user.save();
-      res.status(201).json({ message: 'User registered successfully' });
+
+      // Set the token in a cookie
+      res.setHeader('Set-Cookie', serialize('authToken', token, { path: '/', httpOnly: true }));
+
+      res.status(201).json({ message: 'User registered successfully', token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
     } catch (err) {
       console.error('Error registering user:', err.message);
       res.status(500).json({ message: 'Server error' });

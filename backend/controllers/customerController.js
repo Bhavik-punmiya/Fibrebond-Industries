@@ -1,10 +1,12 @@
+const { GridFSBucket, ObjectId } = require('mongoose');
+const mongoose = require('mongoose');
 const User = require('../models/UserSchema');
 const Customer = require('../models/Customer');
 const { StatusCodes } = require('http-status-codes');
 const CustomError = require('../errors');
 const fs = require('fs');
 const path = require('path');
-const { ObjectId } = require('mongodb')
+// const { ObjectId } = require('mongodb')
 // @desc    Get all customers
 // @route   GET /api/v1/customers
 // @access  Public
@@ -32,22 +34,19 @@ const getCustomerById = async (req, res) => {
     res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
   }
 };
-
 const createOrUpdateCustomer = async (req, res) => {
   try {
-    const { email, phoneNumber } = req.body;
-
+    const { email, phoneNumber, billingAddress, shippingAddress, taxInformation, document, termsAccepted } = req.body;
+    console.log(req.body);
     // Find the user by email or phone number
     const user = await User.findOne({ $or: [{ email }, { phone: phoneNumber }] });
-    console.log("User found:", user._id.toString());
-    
+
     if (!user) {
       throw new CustomError.NotFoundError('User not found');
     }
 
     // Check if a customer record already exists for this user
     let customer = await Customer.findOne({ _id: user._id });
-    console.log("Existing customer:", customer);
 
     if (customer) {
       console.log("Updating existing customer...");
@@ -55,17 +54,38 @@ const createOrUpdateCustomer = async (req, res) => {
       Object.keys(req.body).forEach((key) => {
         customer[key] = req.body[key];
       });
-      await customer.save();
     } else {
       console.log('Creating new customer...');
       // Create a new customer
-      // const id = new ObjectId(user._id.toString());
       customer = new Customer({
         _id: user._id,
-        ...req.body
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email,
+        phoneNumber,
+        billingAddress,
+        shippingAddresses: Array.isArray(shippingAddress) ? shippingAddress : [shippingAddress],
+        taxInformation,
+        termsAccepted
       });
-      await customer.save();
     }
+// Save document file in GridFS
+if (req.files && req.files.document) {
+  const documentFile = req.files.document;
+  const gridFsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
+  const uploadStream = gridFsBucket.openUploadStream(documentFile.filename);
+  fs.createReadStream(documentFile.tempFilePath).pipe(uploadStream);
+  customer.documentUrl = `/api/v1/uploads/document/${documentFile.filename}`;
+}
+    // Save document file in GridFS
+    if (req.body.document) {
+      const gridFsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
+      const uploadStream = gridFsBucket.openUploadStream(req.body.document.filename);
+      fs.createReadStream(req.body.document.path).pipe(uploadStream);
+      customer.documentUrl = `/api/v1/uploads/document/${req.body.document.filename}`;
+    }
+
+    await customer.save();
 
     res.status(StatusCodes.OK).json({ customer });
   } catch (error) {

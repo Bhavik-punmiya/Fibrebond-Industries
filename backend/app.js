@@ -12,7 +12,7 @@ const connectDB = require('./db/connect');
 const orderRouter = require('./routes/orderRoutes');
 const productRouter = require('./routes/productRoutes');
 const customerRouter = require('./routes/customerRoutes');
-
+const uploadRouter = require('./routes/uploadRoutes');
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
@@ -24,6 +24,7 @@ app.use(cors()); // Use cors middleware
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/customers', customerRouter);
+app.use('/api/v1/uploads', uploadRouter);
 
 // Error handling middleware
 app.use(notFoundMiddleware);

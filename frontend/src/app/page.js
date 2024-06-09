@@ -22,7 +22,7 @@ export default function Home() {
       </main>
       <StatsSection />
       <main className="flex  flex-col  justify-between p-2">
-        <FooterComponent />
+        {/* <FooterComponent /> */}
       </main>
     </div>
   );

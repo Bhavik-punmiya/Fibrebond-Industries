@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  jwtToken: {
+    type: String, // Field to store JWT token
+    default: null
   }
 });
 
