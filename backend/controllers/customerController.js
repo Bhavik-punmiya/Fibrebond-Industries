@@ -36,10 +36,15 @@ const getCustomerById = async (req, res) => {
 };
 const createOrUpdateCustomer = async (req, res) => {
   try {
-    const { email, phoneNumber, billingAddress, shippingAddress, taxInformation, document, termsAccepted } = req.body;
-    console.log(req.body);
+    const { email, phoneNumber, billingAddress, shippingAddress, taxInformation, termsAccepted, documentUrl, avatarUrl
+
+    } = req.body;
+
+    // Log the incoming data
+    console.log('Received data:', req.body);
+
     // Find the user by email or phone number
-    const user = await User.findOne({ $or: [{ email }, { phone: phoneNumber }] });
+    const user = await User.findOne({ $or: [{ email }, { phoneNumber }] });
 
     if (!user) {
       throw new CustomError.NotFoundError('User not found');
@@ -66,23 +71,10 @@ const createOrUpdateCustomer = async (req, res) => {
         billingAddress,
         shippingAddresses: Array.isArray(shippingAddress) ? shippingAddress : [shippingAddress],
         taxInformation,
-        termsAccepted
+        termsAccepted, 
+        avatarUrl,
+        documentUrl
       });
-    }
-// Save document file in GridFS
-if (req.files && req.files.document) {
-  const documentFile = req.files.document;
-  const gridFsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
-  const uploadStream = gridFsBucket.openUploadStream(documentFile.filename);
-  fs.createReadStream(documentFile.tempFilePath).pipe(uploadStream);
-  customer.documentUrl = `/api/v1/uploads/document/${documentFile.filename}`;
-}
-    // Save document file in GridFS
-    if (req.body.document) {
-      const gridFsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
-      const uploadStream = gridFsBucket.openUploadStream(req.body.document.filename);
-      fs.createReadStream(req.body.document.path).pipe(uploadStream);
-      customer.documentUrl = `/api/v1/uploads/document/${req.body.document.filename}`;
     }
 
     await customer.save();
@@ -94,6 +86,8 @@ if (req.files && req.files.document) {
   }
 };
 
+// @desc    Update a customer by ID
+// @route   PATCH /api/v1/customers/:id
 
 
 // @desc    Update a customer by ID

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import countriesData from '../../../public/countries.json';
 import 'intl-tel-input/build/css/intlTelInput.css';
+import { UserCircleIcon, PhotoIcon } from '@heroicons/react/24/solid';
+import axios from 'axios'; // Import Axios
 
 const PersonalDetailsForm = () => {
   const countries = countriesData;
@@ -40,6 +41,8 @@ const PersonalDetailsForm = () => {
       gstType: '',
       panNumber: '',
     },
+    documentUrl : '',
+    avatarUrl : '',
     document: null,
     photo: null,
     termsAccepted: false,
@@ -94,39 +97,65 @@ const PersonalDetailsForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create a FormData object and append all form data except photo and document
-    const formDataObj = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key !== 'photo' && key !== 'document') {
-        formDataObj.append(key, value);
-      }
-    });
-
-    // Append photo and document separately
-    if (formData.photo) {
-      formDataObj.append('photo', formData.photo);
-    }
-    if (formData.document) {
-      formDataObj.append('document', formData.document);
-    }
-
     try {
-      const response = await fetch('http://localhost:5000/api/v1/customers', {
-        method: 'POST',
-        body: formDataObj,
-      });
+      let avatarUrl = null;
+      let documentUrl = null;
 
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Error: ${errorMessage}`);
+      // Upload avatar
+      if (formData.photo) {
+        const avatarFormData = new FormData();
+        avatarFormData.append('file', formData.photo);
+
+        const avatarResponse = await axios.post('http://localhost:5000/api/v1/uploads', avatarFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        avatarUrl = avatarResponse.data.fileId;
       }
 
-      const data = await response.json();
+      // Upload document
+      if (formData.document) {
+        const documentFormData = new FormData();
+        documentFormData.append('file', formData.document);
+
+        const documentResponse = await axios.post('http://localhost:5000/api/v1/uploads', documentFormData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        documentUrl = documentResponse.data.fileId;
+      }
+
+      // Append the URLs of the uploaded files to formData
+      if (avatarUrl) {
+        formData['avatarUrl'] = avatarUrl;
+      }
+      if (documentUrl) {
+        formData['documentUrl'] = documentUrl;
+      }
+      console.log('formdata before request',formData)
+      // Submit the customer data
+      const response = await axios.post('http://localhost:5000/api/v1/customers', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('formdata after request',formData);
+      if (!response.status === 200) {
+        throw new Error(`Error creating customer: ${response.statusText}`);
+      }
+
+      const data = response.data;
       console.log('Customer created:', data.customer);
     } catch (error) {
       console.error('Error creating customer:', error.message);
     }
   };
+
+
 
   useEffect(() => {
     const loadIntlTelInput = async () => {
@@ -142,7 +171,6 @@ const PersonalDetailsForm = () => {
 
     loadIntlTelInput();
   }, []);
-
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -740,11 +768,10 @@ const PersonalDetailsForm = () => {
                       >
                         <span>Upload a file</span>
                         <input id="file-upload"
-                        name="document"
-                        value={formData.document}
-                        onChange={handleDocumentUpload} 
-                        type="file" 
-                        className="sr-only" />
+                          name="document"
+                          onChange={handleDocumentUpload}
+                          type="file"
+                          className="sr-only" />
                       </label>
                       <p className="pl-1">or drag and drop</p>
                     </div>

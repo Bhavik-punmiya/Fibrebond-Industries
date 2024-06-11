@@ -3,6 +3,8 @@ require('express-async-errors'); // Enable async error handling
 
 const express = require('express');
 const cors = require('cors'); // Import cors middleware
+const bodyParser = require('body-parser');
+const multer = require('multer'); // Import multer for file uploads
 const app = express();
 
 // Database connection
@@ -13,18 +15,34 @@ const orderRouter = require('./routes/orderRoutes');
 const productRouter = require('./routes/productRoutes');
 const customerRouter = require('./routes/customerRoutes');
 const uploadRouter = require('./routes/uploadRoutes');
+const roleRoutes = require('./routes/rolesRoutes');
+const familyRoutes = require('./routes/familyRoutes');
+
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 
-app.use(express.json()); // Parse JSON bodies
-app.use(cors()); // Use cors middleware
+// Configure body parsers
+app.use(express.json());
+
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Use cors middleware
+app.use(cors({
+  origin: '*', // Adjust according to your needs; '*' allows all origins
+  credentials: true, // Include this if your request uses credentials
+}));
 
 // Attach routes
+app.use('/api/v1/customers', customerRouter); // Apply multer to customer route
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/products', productRouter);
-app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/uploads', uploadRouter);
+app.use('/api/v1/roles', roleRoutes);
+app.use('/api/v1/family', familyRoutes);
 
 // Error handling middleware
 app.use(notFoundMiddleware);

@@ -47,8 +47,8 @@ const PaymentInfoSchema = new Schema({
 });
 
 const CustomerSchema = new Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
+  firstName: { type: String },
+  lastName: { type: String },
   email: { type: String, unique: true, sparse: true },
   phoneNumber: { type: String, unique: true, sparse: true },
   familyName: String,
@@ -61,10 +61,11 @@ const CustomerSchema = new Schema({
   orders: [String], // Array of order IDs as strings
   taxInformation: TaxInformationSchema,
   paymentInfo: PaymentInfoSchema,
-  profilePictureUrl: String, // Field to store the URL or path of the profile picture
-  documentUrl: String, // Field to store the URL or path of the document
+  avatarUrl: String,
+  documentUrl: String,
   dateCreated: { type: Date, default: Date.now },
   dateModified: { type: Date, default: Date.now },
+  families: [{ type: String }], // Array of family names
 });
 
 const Customer = mongoose.model('Customer', CustomerSchema);
