@@ -1,101 +1,131 @@
-const Product = require('../models/Product');
 const { StatusCodes } = require('http-status-codes');
-const CustomError = require('../errors');
+const Product = require('../models/Product');
+// const upload = require('../utils/multerproductConfig');
+const { gfs } = require('../utils/gridfsProductConfig');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const { upload } = require('../utils/gridfsProductConfig');
+const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-// @desc    Get all products
-// @route   GET /api/v1/products
-// @access  Public
-const getProducts = async (req, res) => {
+// Controller to get all products
+const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.status(StatusCodes.OK).json({ products });
+    const products = await Product.find();
+    res.status(StatusCodes.OK).json(products);
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
 
-// @desc    Get single product by ID
-// @route   GET /api/v1/products/:id
-// @access  Public
+// Controller to get a single product by ID
 const getProductById = async (req, res) => {
-  const { id: productId } = req.params;
   try {
-    const product = await Product.findById(productId);
+    const product = await Product.findById(req.params.id);
     if (!product) {
-      throw new CustomError.NotFoundError(`Product with ID ${productId} not found`);
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Product not found' });
     }
-    res.status(StatusCodes.OK).json({ product });
+    res.status(StatusCodes.OK).json(product);
   } catch (error) {
-    res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
 
-// @desc    Create a new product
-// @route   POST /api/v1/products
-// @access  Private (Admin)
+// Controller to create a new product
 const createProduct = async (req, res) => {
   try {
     const product = await Product.create(req.body);
-    res.status(StatusCodes.CREATED).json({ product });
+    res.status(StatusCodes.CREATED).json(product);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
 
-// @desc    Update a product by ID
-// @route   PATCH /api/v1/products/:id
-// @access  Private (Admin)
+// Controller to update a product by ID
 const updateProduct = async (req, res) => {
-  const { id: productId } = req.params;
   try {
-    const product = await Product.findByIdAndUpdate(productId, req.body, { new: true, runValidators: true });
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!product) {
-      throw new CustomError.NotFoundError(`Product with ID ${productId} not found`);
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Product not found' });
     }
-    res.status(StatusCodes.OK).json({ product });
+    res.status(StatusCodes.OK).json(product);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
 
-// @desc    Delete a product by ID
-// @route   DELETE /api/v1/products/:id
-// @access  Private (Admin)
+// Controller to delete a product by ID
 const deleteProduct = async (req, res) => {
-  const { id: productId } = req.params;
   try {
-    const product = await Product.findByIdAndDelete(productId);
+    const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
-      throw new CustomError.NotFoundError(`Product with ID ${productId} not found`);
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Product not found' });
     }
     res.status(StatusCodes.OK).json({ message: 'Product deleted successfully' });
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
 
-// @desc    Upload products from JSON file
-// @route   POST /api/v1/products/upload-products
-// @access  Private (Admin)
-const uploadProducts = async (req, res) => {
+// Controller to upload product images
+const uploadProductImages = async (req, res) => {
   try {
-    const filePath = path.join(req.file.destination, req.file.filename);
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const products = JSON.parse(fileContent);
-    await Product.insertMany(products);
-    res.status(StatusCodes.OK).send({ message: 'Products uploaded successfully' });
+    upload.array('images', 5)(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ error: 'File upload error' });
+      } else if (err) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err.message });
+      }
+
+      // Files uploaded successfully
+      const fileInfos = req.files.map(file => ({
+        filename: file.filename,
+        contentType: file.mimetype,
+        size: file.size
+      }));
+
+      res.status(StatusCodes.CREATED).json({ fileInfos });
+    });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to upload products' });
+    console.error('Error uploading product images:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Server error' });
+  }
+};
+// Retrieve product image by filename using GridFS
+const getProductImage = async (req, res) => {
+  try {
+    const { filename } = req.params;
+
+    // Check if gfs is initialized
+    if (!gfs) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'GridFS not initialized' });
+    }
+
+    // Retrieve file from GridFS
+    gfs.find({ filename }).toArray((err, files) => {
+      if (!files || files.length === 0) {
+        return res.status(StatusCodes.NOT_FOUND).json({ error: 'File not found' });
+      }
+
+      // Check if file is an image (optional)
+      // Perform additional checks if necessary
+
+      // Read output to browser
+      const readstream = gfs.openDownloadStreamByName(filename);
+      readstream.pipe(res);
+    });
+  } catch (error) {
+    console.error('Error retrieving product image:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Server error' });
   }
 };
 
 module.exports = {
-  getProducts,
+  getAllProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
-  uploadProducts,
+  uploadProductImages,
+  getProductImage 
 };
