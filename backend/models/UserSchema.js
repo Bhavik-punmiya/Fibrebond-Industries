@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Family = require('./Family'); // Import the Family schema correctly
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -34,7 +33,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
-  families: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Family' }], // Array of family references
+  families: [{ type: String }], // Array of family names
 });
 
 // Custom validation to ensure either email or phone is provided

@@ -4,11 +4,13 @@ const {
   createFamily,
   deleteFamily,
   assignFamilyToUser,
-  removeFamilyFromUser 
+  removeFamilyFromUser,
+  getAllFamilyNames
 } = require('../controllers/familyController');
 
 // Create new family
-router.post('/', createFamily);
+router.post('/', createFamily).get('/', getAllFamilyNames);
+
 
 // Delete family by ID
 router.delete('/:id', deleteFamily);

@@ -17,7 +17,7 @@ const customerRouter = require('./routes/customerRoutes');
 const uploadRouter = require('./routes/uploadRoutes');
 const roleRoutes = require('./routes/rolesRoutes');
 const familyRoutes = require('./routes/familyRoutes');
-
+const userRoutes = require('./routes/userRoutes');
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
@@ -37,6 +37,7 @@ app.use(cors({
 }));
 
 // Attach routes
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/customers', customerRouter); // Apply multer to customer route
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/products', productRouter);
