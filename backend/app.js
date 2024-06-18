@@ -37,6 +37,7 @@ app.use(cors({
 }));
 
 // Attach routes
+app.use(express.static('public'));
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/customers', customerRouter); // Apply multer to customer route
 app.use('/api/v1/orders', orderRouter);

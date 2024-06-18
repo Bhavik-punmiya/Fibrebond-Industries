@@ -1,22 +1,38 @@
-const express = require('express');
-const multer = require('multer');
+const mongoose = require('mongoose');
 const { GridFsStorage } = require('multer-gridfs-storage');
-const url = process.env.MONGO_URI; // Replace with your MongoDB connection string
+const multer = require('multer');
+const Grid = require('gridfs-stream');
+require('dotenv').config();
 
-// Create a storage object with a given configuration
+const mongoURI = process.env.MONGO_URI;
+
+// Create Mongo connection
+const conn = mongoose.createConnection(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+let gfs;
+
+conn.once('open', async () => {
+  // Initialize stream
+  gfs = Grid(conn.db, mongoose.mongo);
+  gfs.collection('productImages'); // collection name
+});
+
 const storage = new GridFsStorage({
-  url: url,
+  url: mongoURI,
   file: (req, file) => {
     return new Promise((resolve, reject) => {
-      const filename = file.originalname;
       const fileInfo = {
-        filename: filename,
-        bucketName: 'uploads' // Specify the bucket name where files will be stored
+        bucketName: 'productImages', // collection name
+        filename: `${Date.now()}-${file.originalname}`,
       };
       resolve(fileInfo);
     });
-  }
+  },
 });
 
-// Set multer storage engine to the newly created object
 const upload = multer({ storage });
+
+module.exports = { gfs, upload };

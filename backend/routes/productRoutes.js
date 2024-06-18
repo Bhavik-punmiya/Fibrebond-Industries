@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { upload } = require('../utils/gridfsProductConfig'); // Ensure this is correctly imported
 const {
   getAllProducts,
   getProductById,
@@ -10,6 +9,8 @@ const {
   uploadProductImages,
   getProductImage
 } = require('../controllers/productController');
+const { productImageUpload } = require('../middleware/fileUploadMiddleware');
+
 
 // GET all products
 router.get('/', getAllProducts);
@@ -26,11 +27,9 @@ router.patch('/:id', updateProduct);
 // DELETE delete a product by ID
 router.delete('/:id', deleteProduct);
 
-// POST upload product images (using multer for file upload)
-// Uncommented and corrected the route for uploading images
-router.post('/:productId/images/upload', upload.array('images', 5), uploadProductImages);
 
-// GET route to retrieve product image by filename using GridFS
-router.get('/images/:filename', getProductImage);
+
+router.post('/upload', productImageUpload.single('image'), uploadProductImages);
+router.get('/image/:filename', getProductImage);
 
 module.exports = router;

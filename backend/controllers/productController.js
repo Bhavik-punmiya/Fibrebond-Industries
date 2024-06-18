@@ -1,12 +1,12 @@
 const { StatusCodes } = require('http-status-codes');
 const Product = require('../models/Product');
-// const upload = require('../utils/multerproductConfig');
-const { gfs } = require('../utils/gridfsProductConfig');
-const { GridFsStorage } = require('multer-gridfs-storage');
-const { upload } = require('../utils/gridfsProductConfig');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+// const { gfs, upload } = require('../utils/gridfsProductConfig');
+// const multer = require('multer');
+// const { productImageUpload } = require('../middleware/fileUploadMiddleware');
+// const { gfsProductImage } = require('../middleware/fileUploadMiddleware');
+
+// controllers/productController.js
+const ProductImage = require('../models/ProductImage');
 
 // Controller to get all products
 const getAllProducts = async (req, res) => {
@@ -67,56 +67,51 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// Controller to upload product images
-const uploadProductImages = async (req, res) => {
+/// Controller to upload product images
+
+
+
+
+// Upload product image
+const uploadProductImages  = async (req, res) => {
   try {
-    upload.array('images', 5)(req, res, async (err) => {
-      if (err instanceof multer.MulterError) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ error: 'File upload error' });
-      } else if (err) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: err.message });
-      }
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
 
-      // Files uploaded successfully
-      const fileInfos = req.files.map(file => ({
-        filename: file.filename,
-        contentType: file.mimetype,
-        size: file.size
-      }));
+    const { filename, mimetype } = req.file;
+    const imageData = req.file.buffer;
 
-      res.status(StatusCodes.CREATED).json({ fileInfos });
+    const productImage = new ProductImage({
+      filename,
+      contentType: mimetype,
+      imageData,
     });
+
+    await productImage.save();
+
+    res.status(201).json({ message: 'Image uploaded successfully', image: productImage });
   } catch (error) {
-    console.error('Error uploading product images:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Server error' });
+    console.error('Error uploading product image:', error);
+    res.status(500).json({ message: 'Error uploading product image' });
   }
 };
-// Retrieve product image by filename using GridFS
+
+// Retrieve product image
 const getProductImage = async (req, res) => {
   try {
     const { filename } = req.params;
+    const productImage = await ProductImage.findOne({ filename });
 
-    // Check if gfs is initialized
-    if (!gfs) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'GridFS not initialized' });
+    if (!productImage) {
+      return res.status(404).json({ message: 'Image not found' });
     }
 
-    // Retrieve file from GridFS
-    gfs.find({ filename }).toArray((err, files) => {
-      if (!files || files.length === 0) {
-        return res.status(StatusCodes.NOT_FOUND).json({ error: 'File not found' });
-      }
-
-      // Check if file is an image (optional)
-      // Perform additional checks if necessary
-
-      // Read output to browser
-      const readstream = gfs.openDownloadStreamByName(filename);
-      readstream.pipe(res);
-    });
+    res.set('Content-Type', productImage.contentType);
+    res.send(productImage.imageData);
   } catch (error) {
     console.error('Error retrieving product image:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Server error' });
+    res.status(500).json({ message: 'Error retrieving product image' });
   }
 };
 
@@ -127,5 +122,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   uploadProductImages,
-  getProductImage 
+  getProductImage
 };
