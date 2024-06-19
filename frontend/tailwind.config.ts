@@ -9,6 +9,7 @@ const config: Config = {
   
 
   content: [
+    "./node_modules/flowbite-react/lib/**/*.{js,ts,jsx, tsx,mdx}",
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -346,7 +347,8 @@ const config: Config = {
   
   plugins: [
     addVariablesForColors,
-    require('@tailwindcss/forms')
+    require('@tailwindcss/forms'),
+    require("flowbite/plugin")
   ],
 };
 

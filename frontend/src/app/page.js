@@ -4,7 +4,7 @@ import ProfessionalServices from "./components/hero";
 import WhatweOffer from "./components/whatweoffer";
 import Choose from "./components/choose";
 import StatsSection from "./components/StatsSection";
-import Footer from './components/footer.jsx';
+import Footer from './components/Footer.jsx';
 import FeatureComponent from "./components/Features";
 import  ProductDisplay from "./components/ProductDisplay";
 import Header from './components/navbar.jsx';
