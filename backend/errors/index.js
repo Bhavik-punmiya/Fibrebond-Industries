@@ -1,4 +1,4 @@
-const CustomAPIError = require('./custom-api');
+const CustomAPIError = require('./Custom-api');
 const UnauthenticatedError = require('./unauthenticated');
 const NotFoundError = require('./not-found');
 const BadRequestError = require('./bad-request');
