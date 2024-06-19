@@ -1,35 +1,30 @@
-const mongoose = require('mongoose');
-const { GridFsStorage } = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
+// db/connect.js
+const { MongoClient } = require('mongodb');
+const { GridFSBucket } = require('mongodb');
 
-// Mongo URI
-const mongoURI = 'mongodb://your_mongo_uri';
+let gridFSBucket;
 
-const conn = mongoose.createConnection(mongoURI, {
+async function connectToDatabase(mongoURI) {
+  const client = new MongoClient(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-});
+  });
 
-// Init gfs
-let gfs;
-conn.once('open', () => {
-    gfs = Grid(conn.db, mongoose.mongo);
-    gfs.collection('uploads');
-});
+  try {
+    await client.connect();
+    const db = client.db(); // Assuming your database name
+    gridFSBucket = new GridFSBucket(db);
+    console.log('MongoDB connected');
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+  }
+}
 
-// Create storage engine
-const storage = new GridFsStorage({
-    url: mongoURI,
-    file: (req, file) => {
-        return new Promise((resolve, reject) => {
-            const filename = file.originalname;
-            const fileInfo = {
-                filename: filename,
-                bucketName: 'uploads'
-            };
-            resolve(fileInfo);
-        });
-    }
-});
+function getGridFSBucket() {
+  if (!gridFSBucket) {
+    throw new Error('GridFS bucket not initialized');
+  }
+  return gridFSBucket;
+}
 
-module.exports = { gfs, storage };
+module.exports = { connectToDatabase, getGridFSBucket };

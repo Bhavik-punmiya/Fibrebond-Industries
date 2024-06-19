@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 const {
   getAllProducts,
@@ -9,7 +10,10 @@ const {
   uploadProductImages,
   getProductImage
 } = require('../controllers/productController');
-const { productImageUpload } = require('../middleware/fileUploadMiddleware');
+
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage })
 
 
 // GET all products
@@ -28,8 +32,9 @@ router.patch('/:id', updateProduct);
 router.delete('/:id', deleteProduct);
 
 
+router.post('/upload', upload.single('file'), uploadProductImages);
 
-router.post('/upload', productImageUpload.single('image'), uploadProductImages);
-router.get('/image/:filename', getProductImage);
+// Retrieve product image by ID
+router.get('/image/:id', getProductImage);
 
 module.exports = router;

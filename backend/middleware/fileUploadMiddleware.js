@@ -1,18 +1,9 @@
-// middlewares/fileUploadMiddleware.js
 const multer = require('multer');
-const path = require('path');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const productImageUpload = multer({ storage });
+// Multer storage configuration
+const storage = multer.memoryStorage();
+const productImageUpload = multer({ storage }).single('image');
 
 module.exports = {
-  productImageUpload,
+  productImageUpload
 };

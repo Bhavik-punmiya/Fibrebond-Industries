@@ -1,14 +1,14 @@
 const { StatusCodes } = require('http-status-codes');
 const Product = require('../models/Product');
-// const { gfs, upload } = require('../utils/gridfsProductConfig');
-// const multer = require('multer');
-// const { productImageUpload } = require('../middleware/fileUploadMiddleware');
-// const { gfsProductImage } = require('../middleware/fileUploadMiddleware');
 
-// controllers/productController.js
+const { getGridFSBucket } = require('../utils/gridfs');
+
+const gridFSBucket =  getGridFSBucket();
+
+
 const ProductImage = require('../models/ProductImage');
 
-// Controller to get all products
+
 const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -68,50 +68,49 @@ const deleteProduct = async (req, res) => {
 };
 
 /// Controller to upload product images
-
-
-
-
-// Upload product image
-const uploadProductImages  = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-
-    const { filename, mimetype } = req.file;
-    const imageData = req.file.buffer;
-
-    const productImage = new ProductImage({
-      filename,
-      contentType: mimetype,
-      imageData,
-    });
-
-    await productImage.save();
-
-    res.status(201).json({ message: 'Image uploaded successfully', image: productImage });
-  } catch (error) {
-    console.error('Error uploading product image:', error);
-    res.status(500).json({ message: 'Error uploading product image' });
+const uploadProductImages =  async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send({ message: 'No file uploaded' });
   }
+
+  const filename = `${Date.now()}-${req.file.originalname}`;
+  const writestream = gridFSBucket.openUploadStream(filename, {
+    contentType: req.file.mimetype
+  });
+
+  writestream.on('error', (err) => {
+    return res.status(500).send({ message: 'Error uploading file', error: err.message });
+  });
+
+  writestream.on('finish', () => {
+    res.send({ fileId: writestream.id, filename: filename });
+  });
+
+  writestream.end(req.file.buffer);
 };
 
-// Retrieve product image
+// Retrieve file from GridFS
 const getProductImage = async (req, res) => {
   try {
-    const { filename } = req.params;
-    const productImage = await ProductImage.findOne({ filename });
+    // Correctly convert the fileId string to a MongoDB ObjectId
+    const objectId = new ObjectId(req.params.id);
+    console.log(objectId)
+    const file = await gridFSBucket.find({ _id: objectId }).toArray();
 
-    if (!productImage) {
-      return res.status(404).json({ message: 'Image not found' });
+    if (file.length === 0) {
+      return res.status(404).send({ message: 'File not found' });
     }
 
-    res.set('Content-Type', productImage.contentType);
-    res.send(productImage.imageData);
+    const fileObj = file[0];
+    const readstream = gridFSBucket.openDownloadStream(objectId);
+
+    // Set headers to allow viewing in the browser
+    res.setHeader('Content-Type', fileObj.contentType);
+
+    readstream.pipe(res);
   } catch (error) {
-    console.error('Error retrieving product image:', error);
-    res.status(500).json({ message: 'Error retrieving product image' });
+    console.error('Error retrieving file:', error);
+    return res.status(500).send({ message: 'Error retrieving file', error: error.message });
   }
 };
 
