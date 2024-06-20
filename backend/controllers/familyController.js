@@ -5,18 +5,30 @@ const createFamily = async (req, res) => {
   const { familyName, plans } = req.body;
 
   try {
-    const family = await Family.create({ familyName, plans });
-    res.status(201).json({ family });
+    const existingFamily = await Family.findOne({ familyName });
+
+    if (existingFamily) {
+      return res.status(400).json({ message: 'Family already exists' });
+    }
+
+    const family = new Family({ familyName, plans });
+    await family.save();
+    res.status(201).json({ message: 'Family created successfully', family });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
 const deleteFamily = async (req, res) => {
-  const { id } = req.params;
+  const { familyName } = req.body;
 
   try {
-    await Family.findByIdAndDelete(id);
+    const family = await Family.findOneAndDelete({ familyName });
+
+    if (!family) {
+      return res.status(404).json({ message: 'Family not found' });
+    }
+
     res.status(200).json({ message: 'Family deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -84,10 +96,30 @@ const getAllFamilyNames = async (req, res) => {
   }
 };
 
+const updateFamilyPlans = async (req, res) => {
+  const { familyName, plans } = req.body;
+
+  try {
+      const family = await Family.findOne({ familyName });
+
+      if (!family) {
+          return res.status(404).json({ message: 'Family not found' });
+      }
+
+      family.plans = plans;
+      await family.save();
+
+      res.status(200).json({ message: 'Family plans updated successfully', family });
+  } catch (error) {
+      res.status(500).json({ message: 'Error updating family plans', error });
+  }
+};
+
 module.exports = {
   createFamily,
   deleteFamily,
   assignFamilyToUser,
   removeFamilyFromUser,
-  getAllFamilyNames, // Export the new function
+  getAllFamilyNames,
+  updateFamilyPlans // Export the new function
 };

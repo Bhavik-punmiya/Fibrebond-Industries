@@ -6,6 +6,8 @@ const cors = require('cors'); // Import cors middleware
 const bodyParser = require('body-parser');
 const multer = require('multer'); // Import multer for file uploads
 const app = express();
+const mongoose = require('mongoose');
+const { GridFSBucket, ObjectId } = require('mongodb');
 
 // Database connection
 const connectDB = require('./db/connect');
@@ -18,6 +20,7 @@ const uploadRouter = require('./routes/uploadRoutes');
 const roleRoutes = require('./routes/rolesRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const userRoutes = require('./routes/userRoutes');
+const plansRoutes = require('./routes/plansRoutes')
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
@@ -27,12 +30,19 @@ app.use(express.json());
 
 
 // Use cors middleware
-app.use(cors({
-  origin: '', // Adjust according to your needs; '' allows all origins
-  credentials: true, // Include this if your request uses credentials
-}));
+app.use(cors())
 
-// Attach routes
+
+
+// Define your routes here...
+app.use(express.json()); // Use this if you're expecting JSON payloads
+
+// Multer storage configuration
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Upload file to GridFS
+
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/customers', customerRouter); // Apply multer to customer route
 app.use('/api/v1/orders', orderRouter);
@@ -40,8 +50,8 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/uploads', uploadRouter);
 app.use('/api/v1/roles', roleRoutes);
 app.use('/api/v1/family', familyRoutes);
+app.use('/api/v1/plans', plansRoutes);
 
-// Error handling middleware
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
@@ -52,7 +62,7 @@ const start = async () => {
   try {
     await connectDB(process.env.MONGO_URI); // Ensure MONGO_URI is defined in your .env file
     app.listen(port, () => {
-      console.log(`Server is listening on port ${ port }...`);
+      console.log(`Server is listening on port ${port}...`);
     });
   } catch (error) {
     console.error('Failed to connect to the database:', error.message);
@@ -60,3 +70,5 @@ const start = async () => {
 };
 
 start();
+
+

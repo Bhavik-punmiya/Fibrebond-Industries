@@ -1,9 +1,8 @@
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
-// Multer storage configuration
 const storage = multer.memoryStorage();
-const productImageUpload = multer({ storage }).single('image');
+const upload = multer({ storage });
 
-module.exports = {
-  productImageUpload
-};
+module.exports = upload;
