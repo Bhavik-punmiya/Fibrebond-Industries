@@ -1,12 +1,10 @@
 const { StatusCodes } = require('http-status-codes');
 const Product = require('../models/Product');
 
-const { getGridFSBucket } = require('../utils/gridfs');
-
-const gridFSBucket =  getGridFSBucket();
 
 
-const ProductImage = require('../models/ProductImage');
+
+
 
 
 const getAllProducts = async (req, res) => {
@@ -67,52 +65,7 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-/// Controller to upload product images
-const uploadProductImages =  async (req, res) => {
-  if (!req.file) {
-    return res.status(400).send({ message: 'No file uploaded' });
-  }
 
-  const filename = `${Date.now()}-${req.file.originalname}`;
-  const writestream = gridFSBucket.openUploadStream(filename, {
-    contentType: req.file.mimetype
-  });
-
-  writestream.on('error', (err) => {
-    return res.status(500).send({ message: 'Error uploading file', error: err.message });
-  });
-
-  writestream.on('finish', () => {
-    res.send({ fileId: writestream.id, filename: filename });
-  });
-
-  writestream.end(req.file.buffer);
-};
-
-// Retrieve file from GridFS
-const getProductImage = async (req, res) => {
-  try {
-    // Correctly convert the fileId string to a MongoDB ObjectId
-    const objectId = new ObjectId(req.params.id);
-    console.log(objectId)
-    const file = await gridFSBucket.find({ _id: objectId }).toArray();
-
-    if (file.length === 0) {
-      return res.status(404).send({ message: 'File not found' });
-    }
-
-    const fileObj = file[0];
-    const readstream = gridFSBucket.openDownloadStream(objectId);
-
-    // Set headers to allow viewing in the browser
-    res.setHeader('Content-Type', fileObj.contentType);
-
-    readstream.pipe(res);
-  } catch (error) {
-    console.error('Error retrieving file:', error);
-    return res.status(500).send({ message: 'Error retrieving file', error: error.message });
-  }
-};
 
 module.exports = {
   getAllProducts,
@@ -120,6 +73,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-  uploadProductImages,
-  getProductImage
+
 };

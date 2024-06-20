@@ -1,6 +1,6 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import Family from "@/components/plans/family";
+import Family from "@/components/plans/family.jsx";
 
 const plans = () => {
   return (

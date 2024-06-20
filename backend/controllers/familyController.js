@@ -76,9 +76,9 @@ const removeFamilyFromUser = async (req, res) => {
 
 const getAllFamilyNames = async (req, res) => {
   try {
-    const families = await Family.find({}, 'familyName'); // Fetch all families, but only return the familyName field
-    const familyNames = families.map(family => family.familyName); // Extract family names
-    res.status(200).json(familyNames);
+    const families = await Family.find({}); // Fetch all families, but only return the familyName field
+     // Extract family names
+    res.status(200).json(families);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
