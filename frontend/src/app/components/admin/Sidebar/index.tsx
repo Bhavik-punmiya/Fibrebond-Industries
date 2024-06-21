@@ -424,24 +424,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                           <li>
                             <Link
-                              href="/admin/forms/form-elements"
+                              href="/admin/products"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/admin/forms/form-elements" &&
                                 "text-white"
                                 }`}
                             >
-                              Products Management
+                              Products Details
                             </Link>
                           </li>
-                          <li>
-                            <Link
-                              href="/admin/forms/form-layout"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${pathname === "/admin/forms/form-layout" &&
-                                "text-white"
-                                } `}
-                            >
-                              Form Layout
-                            </Link>
-                          </li>
+
                         </ul>
                       </div>
                       {/* <!-- Dropdown Menu End --> */}
