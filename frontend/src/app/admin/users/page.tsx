@@ -1,5 +1,5 @@
 import DefaultLayout from '../../components/admin/Layouts/DefaultLayout';
-import UserTable from "@/components/Tables/UserTable";
+import UserTable from "@/components/Users/usersTable";
 import UserPageTab from "@/components/Tabs/UserPageTab";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 
