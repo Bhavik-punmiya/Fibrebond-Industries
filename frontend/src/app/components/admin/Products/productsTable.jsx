@@ -4,6 +4,12 @@ import Image from "next/image";
 import { useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import makeAnimated from 'react-select/animated';
+import Select from 'react-select';
+import * as Dialog from '@radix-ui/react-dialog';
 
 const productData = [
   {
@@ -42,6 +48,12 @@ const productData = [
 
 const TableTwo = () => {
   const [checkedItems, setCheckedItems] = useState([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedFamily, setSelectedFamily] = useState(null);
+  const [newFamilyName, setNewFamilyName] = useState(''); // New family name
+  const [selectedPlans, setSelectedPlans] = useState([]);
+
+  const animatedComponents = makeAnimated();
 
   const handleCheckboxChange = (index) => {
     setCheckedItems((prev) => {
@@ -57,6 +69,17 @@ const TableTwo = () => {
     return classes.filter(Boolean).join(' ')
   }
 
+  
+  const openAddModal = () => {
+    setIsAddModalOpen(true);
+    setSelectedPlans([]);
+    setNewFamilyName('');
+};
+
+
+  const handleAddSubmit =()=> {
+
+  }
 
 
   return (
@@ -272,7 +295,7 @@ const TableTwo = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[80px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                    CheckBox
+                  CheckBox
                 </th>
                 <th className="min-w-[240px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
                   Product Name
@@ -294,40 +317,40 @@ const TableTwo = () => {
             <tbody>
               {productData.map((product, key) => (
                 <tr key={key}>
-                 
+
 
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
 
-              <input
-                type="checkbox"
-                id={`checkbox${key}`}
-                className="sr-only"
-                checked={checkedItems.includes(key)}
-                onChange={() => handleCheckboxChange(key)}
-              />
-              <div
-                className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${checkedItems.includes(key)
-                  ? "border-primary bg-gray dark:bg-transparent"
-                  : "border-gray-300"
-                  }`}
-              >
-                {checkedItems.includes(key) && (
-                  <svg
-                    width="11"
-                    height="8"
-                    viewBox="0 0 11 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                      fill="#3056D3"
-                      stroke="#3056D3"
-                      strokeWidth="0.4"
-                    ></path>
-                  </svg>
-                )}
-              </div>
+                    <input
+                      type="checkbox"
+                      id={`checkbox${key}`}
+                      className="sr-only"
+                      checked={checkedItems.includes(key)}
+                      onChange={() => handleCheckboxChange(key)}
+                    />
+                    <div
+                      className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${checkedItems.includes(key)
+                        ? "border-primary bg-gray dark:bg-transparent"
+                        : "border-gray-300"
+                        }`}
+                    >
+                      {checkedItems.includes(key) && (
+                        <svg
+                          width="11"
+                          height="8"
+                          viewBox="0 0 11 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
+                            fill="#3056D3"
+                            stroke="#3056D3"
+                            strokeWidth="0.4"
+                          ></path>
+                        </svg>
+                      )}
+                    </div>
 
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
@@ -429,7 +452,46 @@ const TableTwo = () => {
           </table>
         </div>
       </div>
+      {/* Add Modal */}
+      <Dialog.Root open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
 
+
+
+        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+        <Dialog.Content className="fixed top-[55%] left-[60%] transform -translate-x-1/2  -translate-y-1/2 bg-white rounded-md shadow-lg p-8 min-w-[75%] min-h-[75%]">
+          <form onSubmit={handleAddSubmit}>
+            <h2 className="text-lg font-bold mb-4">Add New Family</h2>
+            <div className="max-w-full">
+              <input
+                type="text"
+                id="family-name-input"
+                name="familyName"
+                aria-label="Family Name Input"
+                className="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Enter Family Name"
+                required
+                />
+                {/* value={newFamilyName}
+                onChange={(e) => setNewFamilyName(e.target.value)} */}
+              <div className="max-h-[5%]">
+                <Select
+                  closeMenuOnSelect={false}
+                  components={animatedComponents}
+                  isMulti
+                  className="max-w-[30%]"
+                  />
+                  {/* options={plans} */}
+                  {/* value={selectedPlans} */}
+                  {/* onChange={handlePlanChange} */}
+              </div>
+
+            </div>
+
+            <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Family</button>
+            <button type="button" onClick={() => setIsAddModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
+          </form>
+        </Dialog.Content>
+      </Dialog.Root>
 
     </div>
   );
