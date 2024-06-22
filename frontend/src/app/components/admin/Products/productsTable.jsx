@@ -1,9 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import makeAnimated from 'react-select/animated';
+import Select from 'react-select';
+import * as Dialog from '@radix-ui/react-dialog';
 
 const productData = [
   {
@@ -42,6 +48,20 @@ const productData = [
 
 const TableTwo = () => {
   const [checkedItems, setCheckedItems] = useState([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // For adding a new family
+  const [mainImage, setMainImage] = useState("https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg");
+  const [isTaxApplicable, setIsTaxApplicable] = useState(false);
+  const [isInStock, setIsInStock] = useState(false);
+  const thumbnails = [
+    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-1.jpg",
+    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-2.jpg",
+    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-3.jpg",
+    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg",
+  ];
+
+
+  const animatedComponents = makeAnimated();
+
 
   const handleCheckboxChange = (index) => {
     setCheckedItems((prev) => {
@@ -57,6 +77,25 @@ const TableTwo = () => {
     return classes.filter(Boolean).join(' ')
   }
 
+  const openAddModal = () => {
+    setIsAddModalOpen(true);
+    setSelectedPlans([]);
+    setNewFamilyName('');
+  };
+
+  const handleAddSubmit = async (e) => {
+    try {
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+
+  const handleImageClick = (image) => {
+    setMainImage(image);
+  };
 
 
   return (
@@ -254,13 +293,13 @@ const TableTwo = () => {
             </Transition>
           </Menu>
 
-          <div>
-            <a
-              href="javascript:void(0)"
+          <div className="mt-3 md:mt-0">
+            <button
+              onClick={openAddModal}
               className="inline-block px-4 py-2 text-white duration-150 font-medium bg-indigo-600 rounded-lg hover:bg-indigo-500 active:bg-indigo-700 md:text-sm"
             >
-              Add Product
-            </a>
+              Add Family
+            </button>
           </div>
         </div>
       </div>
@@ -272,7 +311,7 @@ const TableTwo = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[80px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                    CheckBox
+                  CheckBox
                 </th>
                 <th className="min-w-[240px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
                   Product Name
@@ -294,40 +333,40 @@ const TableTwo = () => {
             <tbody>
               {productData.map((product, key) => (
                 <tr key={key}>
-                 
+
 
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
 
-              <input
-                type="checkbox"
-                id={`checkbox${key}`}
-                className="sr-only"
-                checked={checkedItems.includes(key)}
-                onChange={() => handleCheckboxChange(key)}
-              />
-              <div
-                className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${checkedItems.includes(key)
-                  ? "border-primary bg-gray dark:bg-transparent"
-                  : "border-gray-300"
-                  }`}
-              >
-                {checkedItems.includes(key) && (
-                  <svg
-                    width="11"
-                    height="8"
-                    viewBox="0 0 11 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                      fill="#3056D3"
-                      stroke="#3056D3"
-                      strokeWidth="0.4"
-                    ></path>
-                  </svg>
-                )}
-              </div>
+                    <input
+                      type="checkbox"
+                      id={`checkbox${key}`}
+                      className="sr-only"
+                      checked={checkedItems.includes(key)}
+                      onChange={() => handleCheckboxChange(key)}
+                    />
+                    <div
+                      className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${checkedItems.includes(key)
+                        ? "border-primary bg-gray dark:bg-transparent"
+                        : "border-gray-300"
+                        }`}
+                    >
+                      {checkedItems.includes(key) && (
+                        <svg
+                          width="11"
+                          height="8"
+                          viewBox="0 0 11 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
+                            fill="#3056D3"
+                            stroke="#3056D3"
+                            strokeWidth="0.4"
+                          ></path>
+                        </svg>
+                      )}
+                    </div>
 
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
@@ -428,11 +467,205 @@ const TableTwo = () => {
             </tbody>
           </table>
         </div>
+        <Dialog.Root open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+          <Dialog.Content className="fixed top-[55%] left-[60%] transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-md shadow-lg p-8 min-w-[75%] max-h-[75%] overflow-y-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <form onSubmit={handleAddSubmit}>
+                  <h2 className="text-lg font-bold mb-4">Add New Product</h2>
+
+                  {/* Product Name */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Product Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Product Name"
+                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+                  </div>
+
+                  {/* Product Price */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Product Price
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Product Price"
+                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+                  </div>
+
+                  {/* Short Description */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Short Description
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Short Description"
+                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Description
+                    </label>
+                    <textarea
+                      rows={6}
+                      placeholder="Enter Description"
+                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    ></textarea>
+                  </div>
+
+                  {/* Tax Applicable */}
+                  <div>
+                    <CheckboxTwo
+                      label="Tax Applicable"
+                      isChecked={isTaxApplicable}
+                      onChange={() => setIsTaxApplicable(!isTaxApplicable)}
+                    />
+                  </div>
+
+                  {/* Stock Quantity */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Stock Quantity
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Stock Quantity"
+                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+                  </div>
+
+                  {/* In Stock */}
+                  <div>
+                    <CheckboxTwo
+                      label="In Stock"
+                      isChecked={isInStock}
+                      onChange={() => setIsInStock(!isInStock)}
+                    />
+                  </div>
+
+                  {/* Weight */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Weight
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Weight"
+                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    />
+                  </div>
+
+                  {/* Dimensions */}
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Dimensions (L x B x H)
+                    </label>
+                    <div className="flex items-center gap-4.5">
+                      <input
+                        type="text"
+                        placeholder="Length"
+                        className="w-full rounded-md border-[1.5px] border-stroke bg-transparent p-3 text-center text-2xl font-medium text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Breadth"
+                        className="w-full rounded-md border-[1.5px] border-stroke bg-transparent p-3 text-center text-2xl font-medium text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Height"
+                        className="w-full rounded-md border-[1.5px] border-stroke bg-transparent p-3 text-center text-2xl font-medium text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* File Upload */}
+                  <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
+                    <h3 className="font-medium text-black dark:text-white">File Upload</h3>
+                  </div>
+                  <div className="flex flex-col gap-5.5 p-6.5">
+                    <div>
+                      <label className="mb-3 block text-sm font-medium text-gray-700 dark:text-white">Attach file</label>
+                      <input
+                        type="file"
+                        className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Product</button>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
+                </form>
+              </div>
+            
+              {/* Images Section */}
+  
+              <div className="flex items-start">
+                <div className="w-[70%] ml-[10%]">
+                  <img src={mainImage} alt="main" className="w-full rounded-xl mb-4" />
+                </div>
+                <div className="flex flex-col gap-2 ml-4">
+                  {thumbnails.map((thumb, index) => (
+                    <img
+                      key={index}
+                      src={thumb}
+                      alt={`thumbnail-${index}`}
+                      className={`cursor-pointer rounded-xl w-20 h-20 ${mainImage === thumb ? 'ring-2 ring-indigo-500' : ''}`}
+                      onClick={() => handleImageClick(thumb)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+            </div>
+            
+
+          </Dialog.Content>
+        </Dialog.Root>
       </div>
-
-
-    </div>
+    </div >
   );
 };
+
+const CheckboxTwo = ({ label, isChecked, onChange }) => (
+  <div>
+    <label htmlFor="checkboxLabelTwo" className="flex cursor-pointer select-none items-center">
+      <div className="relative">
+        <input
+          type="checkbox"
+          id="checkboxLabelTwo"
+          className="sr-only"
+          checked={isChecked}
+          onChange={onChange}
+        />
+        <div className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${isChecked && "border-primary bg-gray dark:bg-transparent"}`}>
+          <span className={`opacity-0 ${isChecked && "!opacity-100"}`}>
+            <svg width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
+                fill="#3056D3"
+                stroke="#3056D3"
+                strokeWidth="0.4"
+              />
+            </svg>
+          </span>
+        </div>
+      </div>
+      {label}
+    </label>
+  </div>
+);
+
 
 export default TableTwo;
