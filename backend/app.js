@@ -3,11 +3,9 @@ require('express-async-errors'); // Enable async error handling
 
 const express = require('express');
 const cors = require('cors'); // Import cors middleware
-const bodyParser = require('body-parser');
-const multer = require('multer'); // Import multer for file uploads
 const app = express();
 const mongoose = require('mongoose');
-const { GridFSBucket, ObjectId } = require('mongodb');
+const { initGridFS } = require('./utils/gridfsConfig'); // Import GridFS configuration
 
 // Database connection
 const connectDB = require('./db/connect');
@@ -20,31 +18,18 @@ const uploadRouter = require('./routes/uploadRoutes');
 const roleRoutes = require('./routes/rolesRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const userRoutes = require('./routes/userRoutes');
-const plansRoutes = require('./routes/plansRoutes')
+const plansRoutes = require('./routes/plansRoutes');
+
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 
-// Configure body parsers
 app.use(express.json());
-
-
-// Use cors middleware
-app.use(cors())
-
-
+app.use(cors()); // Use cors middleware
 
 // Define your routes here...
-app.use(express.json()); // Use this if you're expecting JSON payloads
-
-// Multer storage configuration
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Upload file to GridFS
-
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/customers', customerRouter); // Apply multer to customer route
+app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/uploads', uploadRouter);
@@ -60,7 +45,8 @@ const port = process.env.PORT || 5000;
 // Connect to MongoDB and start the server
 const start = async () => {
   try {
-    await connectDB(process.env.MONGO_URI); // Ensure MONGO_URI is defined in your .env file
+    await connectDB(process.env.MONGO_URI);
+    initGridFS(mongoose.connection); // Initialize GridFS after connection is established
     app.listen(port, () => {
       console.log(`Server is listening on port ${port}...`);
     });
@@ -70,5 +56,3 @@ const start = async () => {
 };
 
 start();
-
-

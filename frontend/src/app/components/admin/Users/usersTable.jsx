@@ -85,7 +85,7 @@ const usersTable = () => {
             // Optionally, refresh the user list to reflect changes
             await fetchUsers();
         } catch (error) {
-            toaster.error('Error while Updating', { position: "top-center", })
+            toast.error('Error while Updating', { position: "top-center", })
             console.error('Error updating role and families:', error);
         }
     };
@@ -261,7 +261,14 @@ const usersTable = () => {
                         />
                         {/* Best React Libray for select React-select */}
                         <div className="max-w-full">
-
+                        <Select
+            isMulti
+            defaultOptions={familyOptions}
+            components={animatedComponents}
+            value={selectedFamilyOptions}
+            onChange={handleFamilyChange}
+            options={}
+            />
 
                             <AsyncSelect
 

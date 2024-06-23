@@ -1,9 +1,8 @@
 const express = require('express');
+const { upload, uploadFile, getFile } = require('../controllers/uploadController');
 const router = express.Router();
-const upload = require('../utils/multerConfig');
-const { uploadFile } = require('../controllers/uploadController');
 
-// POST upload a file
-router.post('/', upload.single('file'), uploadFile);
+router.post('/upload', upload, uploadFile);
+router.get('/:id', getFile);
 
 module.exports = router;

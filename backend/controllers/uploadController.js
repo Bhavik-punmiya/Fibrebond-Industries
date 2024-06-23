@@ -1,41 +1,54 @@
+const multer = require('multer');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const { getGfs } = require('../utils/gridfsConfig');
 const mongoose = require('mongoose');
-const { GridFSBucket } = require('mongodb');
-const fs = require('fs');
-const path = require('path');
-const { StatusCodes } = require('http-status-codes');
+require('dotenv').config();
 
-// @desc    Upload a file to GridFS
-// @route   POST /api/v1/uploads
-// @access  Public
-const uploadFile = async (req, res) => {
+const storage = new GridFsStorage({
+  url: process.env.MONGO_URI,
+  file: (req, file) => {
+    return {
+      bucketName: 'uploads', // Setting collection name
+      filename: `${Date.now()}-${file.originalname}` // Setting the filename to upload in the database
+    };
+  }
+});
+
+const upload = multer({ storage });
+
+const uploadFile = (req, res) => {
+  res.status(201).json({ file: req.file });
+};
+
+const getFile = async (req, res) => {
+  console.log('getFile called');
+  const gfs = getGfs();
+  if (!gfs) {
+    console.error('GridFS not initialized');
+    return res.status(500).send('GridFS not initialized');
+  }
+  
   try {
-    if (!req.file) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No file uploaded' });
+    const fileId = new mongoose.Types.ObjectId(req.params.id);
+    console.log(`Searching for file with ID: ${fileId}`);
+    const file = await gfs.find({ _id: fileId }).toArray();
+
+    if (!file || file.length === 0) {
+      console.error('File not found');
+      return res.status(404).json({ error: 'File not found' });
     }
 
-    const gridFsBucket = new GridFSBucket(mongoose.connection.db, {
-      bucketName: 'uploads'
-    });
-
-    const uploadStream = gridFsBucket.openUploadStream(req.file.filename);
-    const filePath = path.join(__dirname, '../', req.file.path);
-    fs.createReadStream(filePath).pipe(uploadStream);
-
-    uploadStream.on('error', (error) => {
-      console.error('Error uploading file to GridFS:', error);
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error uploading file' });
-    });
-
-    uploadStream.on('finish', () => {
-      res.status(StatusCodes.CREATED).json({ fileId: uploadStream.id, filename: req.file.filename });
-    });
-
-  } catch (error) {
-    console.error('Error uploading file:', error.message);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    const readstream = gfs.openDownloadStream(fileId);
+    res.set('Content-Type', file[0].contentType);
+    readstream.pipe(res);
+  } catch (err) {
+    console.error(`Error retrieving file: ${err.message}`);
+    res.status(500).json({ error: err.message });
   }
 };
 
 module.exports = {
+  upload: upload.single('file'),
   uploadFile,
+  getFile
 };
