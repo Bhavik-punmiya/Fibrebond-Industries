@@ -45,19 +45,31 @@ const productData = [
     profit: 103,
   },
 ];
+const thumbnails = [
+  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-1.jpg",
+  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-2.jpg",
+  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-3.jpg",
+  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg",
+];
 
 const TableTwo = () => {
   const [checkedItems, setCheckedItems] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false); // For adding a new family
   const [mainImage, setMainImage] = useState("https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg");
-  const [isTaxApplicable, setIsTaxApplicable] = useState(false);
-  const [isInStock, setIsInStock] = useState(false);
-  const thumbnails = [
-    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-1.jpg",
-    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-2.jpg",
-    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-3.jpg",
-    "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg",
-  ];
+;
+  const [productName, setProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [shortDescription, setShortDescription] = useState('');
+  const [description, setDescription] = useState('');
+  const [isTaxApplicable, setIsTaxApplicable] = useState(true);
+  const [stockQuantity, setStockQuantity] = useState('');
+  const [isInStock, setIsInStock] = useState(true);
+  const [weight, setWeight] = useState('');
+  const [dimensions, setDimensions] = useState({ length: '', breadth: '', height: '' });
+  const [plans, setPlans] = useState([]);
+  const [selectedPlans, setSelectedPlans] = useState([]);
+  const [productData, setProductData] = useState([]);
+
 
 
   const animatedComponents = makeAnimated();
@@ -73,29 +85,79 @@ const TableTwo = () => {
     });
   };
 
+
+
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }
 
   const openAddModal = () => {
     setIsAddModalOpen(true);
-    setSelectedPlans([]);
+ 
     setNewFamilyName('');
   };
 
-  const handleAddSubmit = async (e) => {
+  const fetchProducts = async () => {
     try {
-
+      const response = await fetch('http://localhost:5000/api/v1/products/');
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const data = await response.json();
+      setProductData(data);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching products:', error);
+      // Handle error as needed, e.g., show an error message
     }
-  }
+  };
+
+  fetchProducts();
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/v1/plans');
+      const plansData = response.data.map(plan => ({ value: plan.planName, label: plan.planName }));
+      setPlans(plansData);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  };
+
+  const handleAddSubmit = (e) => {
+    e.preventDefault();
+
+    const newProduct = {
+      name: productName,
+      price: productPrice,
+      shortDescription: shortDescription,
+      description: description,
+      isTaxApplicable: isTaxApplicable,
+      stockQuantity: stockQuantity,
+      isInStock: isInStock,
+      weight: weight,
+      dimensions: dimensions,
+      plans: selectedPlans.map(plan => plan.value),
+    };
+
+    // Submit the new product
+    axios.post('http://localhost:5000/api/v1/products', newProduct)
+      .then(response => {
+        console.log('Product added successfully:', response.data);
+        setIsAddModalOpen(false);
+      })
+      .catch(error => console.error('Error adding product:', error));
+  };
 
 
 
   const handleImageClick = (image) => {
     setMainImage(image);
   };
+
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
 
   return (
@@ -298,7 +360,7 @@ const TableTwo = () => {
               onClick={openAddModal}
               className="inline-block px-4 py-2 text-white duration-150 font-medium bg-indigo-600 rounded-lg hover:bg-indigo-500 active:bg-indigo-700 md:text-sm"
             >
-              Add Family
+              Add Product
             </button>
           </div>
         </div>
@@ -307,126 +369,69 @@ const TableTwo = () => {
 
       <div className="px-2 rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="min-w-[80px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  CheckBox
-                  CheckBox
-                </th>
-                <th className="min-w-[240px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-                  Product Name
-                </th>
-                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-                  Category
-                </th>
-                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Price
-                </th>
-                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-                  Profit
-                </th>
-                <th className="px-4 py-4 font-medium text-black dark:text-white">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {productData.map((product, key) => (
-                <tr key={key}>
-
-
-
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-
-                    <input
-                      type="checkbox"
-                      id={`checkbox${key}`}
-                      className="sr-only"
-                      checked={checkedItems.includes(key)}
-                      onChange={() => handleCheckboxChange(key)}
-                    />
-                    <div
-                      className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${checkedItems.includes(key)
-                        ? "border-primary bg-gray dark:bg-transparent"
-                        : "border-gray-300"
-                        }`}
-                    >
-                      {checkedItems.includes(key) && (
-                        <svg
-                          width="11"
-                          height="8"
-                          viewBox="0 0 11 8"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                            fill="#3056D3"
-                            stroke="#3056D3"
-                            strokeWidth="0.4"
-                          ></path>
-                        </svg>
-                      )}
-                    </div>
-                    <input
-                      type="checkbox"
-                      id={`checkbox${key}`}
-                      className="sr-only"
-                      checked={checkedItems.includes(key)}
-                      onChange={() => handleCheckboxChange(key)}
-                    />
-                    <div
-                      className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${checkedItems.includes(key)
-                        ? "border-primary bg-gray dark:bg-transparent"
-                        : "border-gray-300"
-                        }`}
-                    >
-                      {checkedItems.includes(key) && (
-                        <svg
-                          width="11"
-                          height="8"
-                          viewBox="0 0 11 8"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                            fill="#3056D3"
-                            stroke="#3056D3"
-                            strokeWidth="0.4"
-                          ></path>
-                        </svg>
-                      )}
-                    </div>
-
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                      <div className="h-12.5 w-15 rounded-md">
-                        <Image src={product.image} width={60} height={50} alt="Product" />
-                      </div>
-                      <p className="text-sm text-black dark:text-white">
-                        {product.name}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {product.category}
-                    </p>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-black dark:text-white">
-                      {product.price}
-                    </p>
-                  </td>
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <p className="text-sm text-meta-3">${product.profit}</p>
-                  </td>
-
-                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-                    <div className="flex items-center space-x-3.5">
+        <table className="w-full table-auto">
+      <thead>
+        <tr className="bg-gray-2 text-left dark:bg-meta-4">
+          <th className="min-w-[80px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
+            CheckBox
+          </th>
+          <th className="min-w-[240px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
+            Product Name
+          </th>
+          <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
+            Plans
+          </th>
+          <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
+            Price
+          </th>
+          <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
+            Stock Quantity
+          </th>
+          <th className="px-4 py-4 font-medium text-black dark:text-white">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {productData.map((product, index) => (
+          <tr key={product._id}>
+            <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
+              <input
+                type="checkbox"
+                id={`checkbox${index}`}
+                className="sr-only"
+                // Implement checked state and onChange handler if needed
+              />
+              <div
+                className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${
+                  false /* Replace with checked state logic */
+                    ? 'border-primary bg-gray dark:bg-transparent'
+                    : 'border-gray-300'
+                }`}
+              >
+                {/* Replace with your SVG for checked state */}
+              </div>
+            </td>
+            <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="h-12.5 w-15 rounded-md">
+                  {/* Assuming product.image is a URL to your product image */}
+                  <Image src={product.image || '/images/product/product-01.png'} width={60} height={50} alt="Product" />
+                </div>
+                <p className="text-sm text-black dark:text-white">{product.name}</p>
+              </div>
+            </td>
+            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+              <p className="text-black dark:text-white">{product.plans.join(', ')}</p>
+            </td>
+            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+              <p className="text-black dark:text-white">{product.price}</p>
+            </td>
+            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+              <p className="text-black dark:text-white">{product.stockQuantity}</p>
+            </td>
+            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+              <div className="flex items-center space-x-3.5">
                       <button className="hover:text-primary">
                         <svg
                           className="fill-current"
@@ -503,143 +508,174 @@ const TableTwo = () => {
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
           <Dialog.Content className="fixed top-[55%] left-[60%] transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-md shadow-lg p-8 min-w-[75%] max-h-[75%] overflow-y-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div>
-                <form onSubmit={handleAddSubmit}>
-                  <h2 className="text-lg font-bold mb-4">Add New Product</h2>
+            <div>
+            <form onSubmit={handleAddSubmit}>
+      <h2 className="text-lg font-bold mb-4">Add New Product</h2>
 
-                  {/* Product Name */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Product Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter Product Name"
-                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    />
-                  </div>
+      <div>
+        <label className="block text-sm font-medium leading-6 text-gray-900">Product Name</label>
+        <div className="mt-2">
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            placeholder="Enter Product Name"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+      </div>
 
-                  {/* Product Price */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Product Price
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter Product Price"
-                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    />
-                  </div>
+      <div className="mt-3">
+        <label className="block text-sm font-medium leading-6 text-gray-900">Product Price</label>
+        <div className="mt-2">
+          <input
+            type="text"
+            value={productPrice}
+            onChange={(e) => setProductPrice(e.target.value)}
+            placeholder="Enter Product Price"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+      </div>
+      <div className="mt-3">
+        <label className="block text-sm font-medium leading-6 text-gray-900">Select Plans</label>
+        <div className="mt-2">
+          <Select
+            isMulti
+            components={animatedComponents}
+            value={selectedPlans}
+            onChange={setSelectedPlans}
+            options={plans}
+            />
+            {/* className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" */}
+        </div>
+      </div>
+      <div className="mt-3">
+        <label className="block text-sm font-medium leading-6 text-gray-900">Short Description</label>
+        <div className="mt-2">
+          <input
+            type="text"
+            value={shortDescription}
+            onChange={(e) => setShortDescription(e.target.value)}
+            placeholder="Enter Short Description"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+      </div>
 
-                  {/* Short Description */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Short Description
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter Short Description"
-                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    />
-                  </div>
+      <div className="col-span-full mt-3">
+        <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">Description</label>
+        <div className="mt-2">
+          <textarea
+            id="description"
+            name="description"
+            rows={6}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Write a detailed description of the product."
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          ></textarea>
+        </div>
+      </div>
 
-                  {/* Description */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Description
-                    </label>
-                    <textarea
-                      rows={6}
-                      placeholder="Enter Description"
-                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    ></textarea>
-                  </div>
+      <div className="mt-3 space-y-6">
+        <div className="relative flex gap-x-3">
+          <div className="flex h-6 items-center">
+            <input
+              id="tax-applicable"
+              name="tax-applicable"
+              type="checkbox"
+              checked={isTaxApplicable}
+              onChange={() => setIsTaxApplicable(!isTaxApplicable)}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+            />
+          </div>
+          <div className="text-sm leading-6">
+            <label htmlFor="tax-applicable" className="font-medium text-gray-900">Tax Applicable</label>
+            <p className="text-gray-500">Check if tax is applicable to this product.</p>
+          </div>
+        </div>
+      </div>
 
-                  {/* Tax Applicable */}
-                  <div>
-                    <CheckboxTwo
-                      label="Tax Applicable"
-                      isChecked={isTaxApplicable}
-                      onChange={() => setIsTaxApplicable(!isTaxApplicable)}
-                    />
-                  </div>
+      <div className="mt-3">
+        <label className="block text-sm font-medium leading-6 text-gray-900">Stock Quantity</label>
+        <div className="mt-2">
+          <input
+            type="text"
+            value={stockQuantity}
+            onChange={(e) => setStockQuantity(e.target.value)}
+            placeholder="Enter Stock Quantity"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+      </div>
 
-                  {/* Stock Quantity */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Stock Quantity
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter Stock Quantity"
-                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    />
-                  </div>
+      <div className="mt-6 space-y-6">
+        <div className="relative flex gap-x-3">
+          <div className="flex h-6 items-center">
+            <input
+              id="in-stock"
+              name="in-stock"
+              type="checkbox"
+              checked={isInStock}
+              onChange={() => setIsInStock(!isInStock)}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+            />
+          </div>
+          <div className="text-sm leading-6">
+            <label htmlFor="in-stock" className="font-medium text-gray-900">In Stock</label>
+            <p className="text-gray-500">Check if this product is currently in stock.</p>
+          </div>
+        </div>
+      </div>
 
-                  {/* In Stock */}
-                  <div>
-                    <CheckboxTwo
-                      label="In Stock"
-                      isChecked={isInStock}
-                      onChange={() => setIsInStock(!isInStock)}
-                    />
-                  </div>
+      <div className="mt-3">
+        <label className="block text-sm font-medium leading-6 text-gray-900">Weight</label>
+        <div className="mt-2">
+          <input
+            type="text"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            placeholder="Enter Weight"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+      </div>
 
-                  {/* Weight */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Weight
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter Weight"
-                      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    />
-                  </div>
+      <div className="mt-3">
+        <label className="block text-sm font-medium leading-6 text-gray-900">Dimensions (L x B x H)</label>
+        <div className="flex items-center gap-4.5 mt-2">
+          <input
+            type="text"
+            value={dimensions.length}
+            onChange={(e) => setDimensions({ ...dimensions, length: e.target.value })}
+            placeholder="Length"
+            className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+          <input
+            type="text"
+            value={dimensions.breadth}
+            onChange={(e) => setDimensions({ ...dimensions, breadth: e.target.value })}
+            placeholder="Breadth"
+            className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+          <input
+            type="text"
+            value={dimensions.height}
+            onChange={(e) => setDimensions({ ...dimensions, height: e.target.value })}
+            placeholder="Height"
+            className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+      </div>
 
-                  {/* Dimensions */}
-                  <div>
-                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                      Dimensions (L x B x H)
-                    </label>
-                    <div className="flex items-center gap-4.5">
-                      <input
-                        type="text"
-                        placeholder="Length"
-                        className="w-full rounded-md border-[1.5px] border-stroke bg-transparent p-3 text-center text-2xl font-medium text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Breadth"
-                        className="w-full rounded-md border-[1.5px] border-stroke bg-transparent p-3 text-center text-2xl font-medium text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Height"
-                        className="w-full rounded-md border-[1.5px] border-stroke bg-transparent p-3 text-center text-2xl font-medium text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                      />
-                    </div>
-                  </div>
 
-                  {/* File Upload */}
-                  <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-                    <h3 className="font-medium text-black dark:text-white">File Upload</h3>
-                  </div>
-                  <div className="flex flex-col gap-5.5 p-6.5">
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700 dark:text-white">Attach file</label>
-                      <input
-                        type="file"
-                        className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5 file:border-collapse file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:px-5 file:py-3 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:file:border-form-strokedark dark:file:bg-white/30 dark:file:text-white dark:focus:border-primary"
-                      />
-                    </div>
-                  </div>
 
-                  {/* Submit Button */}
-                  <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Product</button>
-                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
-                </form>
-              </div>
+      <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Product</button>
+      <button type="button" onClick={() => setIsAddModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
+    </form>
+</div>
+
             
               {/* Images Section */}
   
@@ -670,34 +706,6 @@ const TableTwo = () => {
   );
 };
 
-const CheckboxTwo = ({ label, isChecked, onChange }) => (
-  <div>
-    <label htmlFor="checkboxLabelTwo" className="flex cursor-pointer select-none items-center">
-      <div className="relative">
-        <input
-          type="checkbox"
-          id="checkboxLabelTwo"
-          className="sr-only"
-          checked={isChecked}
-          onChange={onChange}
-        />
-        <div className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${isChecked && "border-primary bg-gray dark:bg-transparent"}`}>
-          <span className={`opacity-0 ${isChecked && "!opacity-100"}`}>
-            <svg width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972ZM4.2327 6.30081L4.2317 6.2998C4.23206 6.30015 4.23237 6.30049 4.23269 6.30082L4.2327 6.30081Z"
-                fill="#3056D3"
-                stroke="#3056D3"
-                strokeWidth="0.4"
-              />
-            </svg>
-          </span>
-        </div>
-      </div>
-      {label}
-    </label>
-  </div>
-);
 
 
 export default TableTwo;

@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middleware/fileUploadMiddleware');
 const {
   getAllProducts,
   getProductById,
@@ -8,13 +7,6 @@ const {
   updateProduct,
   deleteProduct,
 } = require('../controllers/productController');
-
- 
-
-
-
-  
-
 
 // GET all products
 router.get('/', getAllProducts);
@@ -30,8 +22,5 @@ router.patch('/:id', updateProduct);
 
 // DELETE delete a product by ID
 router.delete('/:id', deleteProduct);
-
-
-
 
 module.exports = router;

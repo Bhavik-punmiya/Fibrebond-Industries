@@ -12,6 +12,9 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  plans: [{
+    type: String,
+  }],
   description: {
     type: String,
   },
@@ -34,17 +37,17 @@ const productSchema = new mongoose.Schema({
     default: 0,
   },
   weight: {
-    type: Number,
+    type: String,
   },
   dimensions: {
     length: {
-      type: Number,
+      type: String,
     },
     breadth: {
-      type: Number,
+      type: String,
     },
     height: {
-      type: Number,
+      type: String,
     },
   },
   inStock: {

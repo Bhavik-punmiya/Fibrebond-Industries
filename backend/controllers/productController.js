@@ -28,15 +28,7 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Controller to create a new product
-const createProduct = async (req, res) => {
-  try {
-    const product = await Product.create(req.body);
-    res.status(StatusCodes.CREATED).json(product);
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
-  }
-};
+
 
 // Controller to update a product by ID
 const updateProduct = async (req, res) => {
@@ -63,6 +55,56 @@ const deleteProduct = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
+
+const createProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      regularPrice,
+      price,
+      description,
+      shortDescription,
+      salesPrice,
+      taxStatus,
+      purchasable,
+      stockQuantity,
+      weight,
+      dimensions,
+      inStock,
+      shippingRequired,
+      categories,
+      plans
+    } = req.body;
+
+    const product = new Product({
+      name,
+      regularPrice,
+      price,
+      description,
+      shortDescription,
+      salesPrice,
+      taxStatus,
+      purchasable,
+      stockQuantity,
+      weight,
+      dimensions: {
+        length: dimensions?.length,
+        breadth: dimensions?.breadth,
+        height: dimensions?.height,
+      },
+      inStock,
+      shippingRequired,
+      categories,
+      plans
+    });
+
+    await product.save();
+    res.status(StatusCodes.CREATED).json(product);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+  }
+};
+
 
 
 
