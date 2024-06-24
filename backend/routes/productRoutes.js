@@ -6,7 +6,8 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  deleteProducts
+  deleteProducts,
+  addProductsToPlans
 } = require('../controllers/productController');
 
 // GET all products
@@ -25,5 +26,7 @@ router.patch('/:id', updateProduct);
 router.delete('/:id', deleteProduct);
 
 router.post('/products/delete', deleteProducts);
+
+router.post('/add-products-to-plans', addProductsToPlans);
 
 module.exports = router;

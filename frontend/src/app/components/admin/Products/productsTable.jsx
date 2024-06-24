@@ -11,46 +11,6 @@ import makeAnimated from 'react-select/animated';
 import Select from 'react-select';
 import * as Dialog from '@radix-ui/react-dialog';
 
-const productData = [
-  {
-    image: "/images/product/product-01.png",
-    name: "Apple Watch Series 7",
-    category: "Electronics",
-    price: 296,
-    sold: 22,
-    profit: 45,
-  },
-  {
-    image: "/images/product/product-02.png",
-    name: "Macbook Pro M1",
-    category: "Electronics",
-    price: 546,
-    sold: 12,
-    profit: 125,
-  },
-  {
-    image: "/images/product/product-03.png",
-    name: "Dell Inspiron 15",
-    category: "Electronics",
-    price: 443,
-    sold: 64,
-    profit: 247,
-  },
-  {
-    image: "/images/product/product-04.png",
-    name: "HP Probook 450",
-    category: "Electronics",
-    price: 499,
-    sold: 72,
-    profit: 103,
-  },
-];
-const thumbnails = [
-  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-1.jpg",
-  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-2.jpg",
-  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-3.jpg",
-  "https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg",
-];
 
 const TableTwo = () => {
 
@@ -60,6 +20,7 @@ const TableTwo = () => {
   );
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddPlanModalOpen, setIsAddPlanModalOpen] = useState(false);
   const [mainImage, setMainImage] = useState("");
   const [thumbnails, setThumbnails] = useState([]);
   const [productName, setProductName] = useState('');
@@ -83,7 +44,7 @@ const TableTwo = () => {
     setCheckedItems((prev) => {
       const newCheckedItems = [...prev];
       newCheckedItems[index] = !newCheckedItems[index];
-  
+
       setSelectedProductIds((prevIds) => {
         if (newCheckedItems[index]) {
           // Add productId to selectedProductIds if it's not already included
@@ -96,11 +57,11 @@ const TableTwo = () => {
         }
         return prevIds; // Return previous state if no changes needed
       });
-  
+
       return newCheckedItems;
     });
   };
-  
+
 
 
   function classNames(...classes) {
@@ -227,16 +188,49 @@ const TableTwo = () => {
       console.log('Deleting products:', selectedProductIds);
       await axios.post('http://localhost:5000/api/v1/products/products/delete', { productIds: selectedProductIds });
       // Refresh or update the product data here after deletion if needed
-      await  fetchProducts();
+      await fetchProducts();
       console.log('Products deleted successfully');
     } catch (err) {
       console.error('Error deleting products:', err);
     }
   };
 
+  const handleAddPlanSubmit = (e) => {
+    e.preventDefault();
+    addProductsToPlans();
+  };
+
+
 
   const handleImageClick = (image) => {
     setMainImage(image);
+  };
+
+
+  const addProductsToPlans = async () => {
+    try {
+  
+      const response = await axios.post('http://localhost:5000/api/v1/products/add-products-to-plans', {
+        productIds: selectedProductIds,
+        selectedPlans: selectedPlans.map(plan => plan.value)
+      });
+  
+      if (response.status === 200) {
+        // Handle successful response
+        const result = response.data;
+        console.log('Products added to plans:', result);
+        setIsAddPlanModalOpen(false);
+        toast.success("Plans Assigned to the Product Successfully", { position: "top-center", });
+        await fetchProducts();
+        // Optionally, refresh product data or other state here
+      } else {
+        // Handle error response
+        toast.error(error, { position: "top-center", });
+        console.error('Failed to add products to plans:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error adding products to plans:', error);
+    }
   };
 
   const handleImageChange = (e) => {
@@ -331,12 +325,13 @@ const TableTwo = () => {
                     {({ focus }) => (
                       <a
                         href="#"
+                        onClick={() => setIsAddPlanModalOpen(true)}
                         className={classNames(
                           focus ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                           'block px-4 py-2 text-sm'
                         )}
                       >
-                        Support
+                        Add Plan
                       </a>
                     )}
                   </MenuItem>
@@ -865,8 +860,8 @@ const TableTwo = () => {
                             handleDeleteSelectedProducts();
                             setIsDeleteModalOpen(false);
                           }}
-        
-                       >
+
+                        >
                           Delete
                         </button>
                       </div>
@@ -885,6 +880,31 @@ const TableTwo = () => {
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
+       {/* Add selected plans to products  */}
+       <Dialog.Root open={isAddPlanModalOpen} onClose={() => setIsAddPlanModalOpen(false)}>
+       <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+          <Dialog.Content className="fixed top-[55%] left-[60%] transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-md shadow-lg p-8 min-w-[50%] max-h-[75%] overflow-y-auto">
+            <form onSubmit={handleAddPlanSubmit}>
+              <h2 className="text-lg font-bold mb-4">Add Plan to Selected Products</h2>
+              <div className="mt-3">
+                <label className="block text-sm font-medium leading-6 text-gray-900">Select Plans</label>
+                <div className="mt-2">
+                  <Select
+                    isMulti
+                    components={animatedComponents}
+                    value={selectedPlans}
+                    onChange={setSelectedPlans}
+                    options={plans}
+                  />
+                </div>
+              </div>
+              <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Plan</button>
+              <button type="button" onClick={() => setIsAddPlanModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
+            </form>
+          </Dialog.Content>
+</Dialog.Root>
+
+
       </div>
     </div >
   );
