@@ -53,7 +53,12 @@ const thumbnails = [
 ];
 
 const TableTwo = () => {
-  const [checkedItems, setCheckedItems] = useState([]);
+
+  const [productData, setProductData] = useState([]);
+  const [checkedItems, setCheckedItems] = useState(
+    new Array(productData.length).fill(false)
+  );
+  const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [mainImage, setMainImage] = useState("");
   const [thumbnails, setThumbnails] = useState([]);
@@ -68,20 +73,35 @@ const TableTwo = () => {
   const [dimensions, setDimensions] = useState({ length: '', breadth: '', height: '' });
   const [plans, setPlans] = useState([]);
   const [selectedPlans, setSelectedPlans] = useState([]);
-  const [productData, setProductData] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
-
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const animatedComponents = makeAnimated();
 
-  const handleCheckboxChange = (index) => {
+
+  const handleCheckboxChange = (index, productId) => {
     setCheckedItems((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((item) => item !== index);
-      } else {
-        return [...prev, index];
-      }
+      const newCheckedItems = [...prev];
+      newCheckedItems[index] = !newCheckedItems[index];
+  
+      setSelectedProductIds((prevIds) => {
+        if (newCheckedItems[index]) {
+          // Add productId to selectedProductIds if it's not already included
+          if (!prevIds.includes(productId)) {
+            return [...prevIds, productId];
+          }
+        } else {
+          // Remove productId from selectedProductIds
+          return prevIds.filter((id) => id !== productId);
+        }
+        return prevIds; // Return previous state if no changes needed
+      });
+  
+      return newCheckedItems;
     });
   };
+  
+
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ');
@@ -116,6 +136,47 @@ const TableTwo = () => {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
+
+    if (!productName.trim()) {
+      setFormErrors({ productName: 'Product Name is required.' });
+      toast.error('Product Name is required.', { position: 'top-center' });
+      return;
+    }
+    if (!productPrice.trim()) {
+      setFormErrors({ productPrice: 'Product Price is required.' });
+      toast.error('Product Price is required.', { position: 'top-center' });
+      return;
+    }
+    if (isNaN(Number(productPrice))) {
+      setFormErrors({ productPrice: 'Product Price must be a number.' });
+      toast.error('Product Price must be a number.', { position: 'top-center' });
+      return;
+    }
+    if (weight && isNaN(Number(weight))) {
+      setFormErrors({ weight: 'Weight must be a number.' });
+      toast.error('Weight must be a number.', { position: 'top-center' });
+      return;
+    }
+    if (dimensions.length && isNaN(Number(dimensions.length))) {
+      setFormErrors({ dimensions: { ...formErrors.dimensions, length: 'Length must be a number.' } });
+      toast.error('Length must be a number.', { position: 'top-center' });
+      return;
+    }
+    if (dimensions.breadth && isNaN(Number(dimensions.breadth))) {
+      setFormErrors({ dimensions: { ...formErrors.dimensions, breadth: 'Breadth must be a number.' } });
+      toast.error('Breadth must be a number.', { position: 'top-center' });
+      return;
+    }
+    if (dimensions.height && isNaN(Number(dimensions.height))) {
+      setFormErrors({ dimensions: { ...formErrors.dimensions, height: 'Height must be a number.' } });
+      toast.error('Height must be a number.', { position: 'top-center' });
+      return;
+    }
+    if (!stockQuantity.trim()) {
+      setFormErrors({ stockQuantity: 'Stock Quantity is required.' });
+      toast.error('Stock Quantity is required.', { position: 'top-center' });
+      return;
+    }
 
     try {
       // First upload images and get their IDs
@@ -158,6 +219,18 @@ const TableTwo = () => {
     } catch (error) {
       console.error('Error adding product:', error);
       toast.error(error, { position: "top-center", });
+    }
+  };
+
+  const handleDeleteSelectedProducts = async () => {
+    try {
+      console.log('Deleting products:', selectedProductIds);
+      await axios.post('http://localhost:5000/api/v1/products/products/delete', { productIds: selectedProductIds });
+      // Refresh or update the product data here after deletion if needed
+      await  fetchProducts();
+      console.log('Products deleted successfully');
+    } catch (err) {
+      console.error('Error deleting products:', err);
     }
   };
 
@@ -243,19 +316,17 @@ const TableTwo = () => {
             >
               <MenuItems className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                 <div className="py-1">
-                  <MenuItem>
-                    {({ focus }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          focus ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                          'block px-4 py-2 text-sm'
-                        )}
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={() => setIsDeleteModalOpen(true)}
+                        className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                          } block w-full text-left px-4 py-2 text-sm`}
                       >
-                        Account settings
-                      </a>
+                        Delete Selected Products
+                      </button>
                     )}
-                  </MenuItem>
+                  </Menu.Item>
                   <MenuItem>
                     {({ focus }) => (
                       <a
@@ -421,19 +492,12 @@ const TableTwo = () => {
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
                     <input
                       type="checkbox"
-                      id={`checkbox${index}`}
-                      className="sr-only"
-                    // Implement checked state and onChange handler if needed
+                      checked={checkedItems[index]}
+                      onChange={() => handleCheckboxChange(index, product._id)}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                     />
-                    <div
-                      className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${false /* Replace with checked state logic */
-                        ? 'border-primary bg-gray dark:bg-transparent'
-                        : 'border-gray-300'
-                        }`}
-                    >
-                      {/* Replace with your SVG for checked state */}
-                    </div>
                   </td>
+
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                       <div className="h-12.5 w-15 rounded-md">
@@ -759,6 +823,67 @@ const TableTwo = () => {
 
 
           </Dialog.Content>
+        </Dialog.Root>
+
+        <Dialog.Root open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 w-full h-full bg-black opacity-40" />
+            <Dialog.Content className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] px-4 w-full max-w-lg">
+              <div className="bg-white rounded-md shadow-lg px-4 py-6 sm:flex">
+                <div className="flex items-center justify-center flex-none w-12 h-12 mx-auto bg-red-100 rounded-full">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5 text-red-600"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="mt-2 text-center sm:ml-4 sm:text-left">
+                  <Dialog.Title className="text-lg font-medium text-gray-800">
+                    {" "}
+                    An error occurred!
+                  </Dialog.Title>
+                  <Dialog.Description className="mt-2 text-sm leading-relaxed text-gray-500">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                    eiusmod tempor incididunt ut labore et dolore magna aliqua. Nunc
+                    eget lorem dolor sed viverra ipsum nunc. venenatis.
+                  </Dialog.Description>
+                  <div className="items-center gap-2 mt-3 text-sm sm:flex">
+                    <Dialog.Close asChild>
+                      <div className="bg-redd-600">
+                        <button
+                          aria-label="Close"
+                          className="w-full mt-2 p-2.5 flex-1 bg-red-600 text-gray-800 rounded-md border ring-offset-2 ring-indigo-600 focus:ring-2"
+                          onClick={() => {
+                            handleDeleteSelectedProducts();
+                            setIsDeleteModalOpen(false);
+                          }}
+        
+                       >
+                          Delete
+                        </button>
+                      </div>
+                    </Dialog.Close>
+                    <Dialog.Close asChild>
+                      <button
+                        aria-label="Close"
+                        className="w-full mt-2 p-2.5 flex-1 text-gray-800 rounded-md border ring-offset-2 ring-indigo-600 focus:ring-2"
+                      >
+                        Cancel
+                      </button>
+                    </Dialog.Close>
+                  </div>
+                </div>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
         </Dialog.Root>
       </div>
     </div >

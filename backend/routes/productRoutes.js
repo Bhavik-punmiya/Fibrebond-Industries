@@ -6,6 +6,7 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  deleteProducts
 } = require('../controllers/productController');
 
 // GET all products
@@ -22,5 +23,7 @@ router.patch('/:id', updateProduct);
 
 // DELETE delete a product by ID
 router.delete('/:id', deleteProduct);
+
+router.post('/products/delete', deleteProducts);
 
 module.exports = router;

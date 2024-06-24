@@ -4,7 +4,7 @@ const upload = require('../middleware/fileUploadMiddleware');
 const Product = require('../models/Product');
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
-
+const { deleteImageById } = require('./uploadController');
 
 const getAllProducts = async (req, res) => {
   try {
@@ -55,6 +55,40 @@ const deleteProduct = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
   }
 };
+
+const deleteProducts = async (req, res) => {
+  const { productIds } = req.body;
+  const deletionResults = [];
+
+  try {
+    for (const productId of productIds) {
+      const product = await Product.findById(productId);
+
+      if (product) {
+        // Delete associated images
+        const imageDeletionPromises = product.images.map(imageId => deleteImageById(imageId));
+        await Promise.all(imageDeletionPromises);
+
+        // Delete the product
+        await Product.findByIdAndDelete(productId);
+        deletionResults.push({ status: 'success', productId });
+      } else {
+        deletionResults.push({ status: 'error', productId, error: 'Product not found' });
+      }
+    }
+
+    const allSuccessful = deletionResults.every(result => result.status === 'success');
+    if (allSuccessful) {
+      res.status(StatusCodes.OK).json({ message: 'Products and associated images deleted successfully' });
+    } else {
+      const errors = deletionResults.filter(result => result.status !== 'success');
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ errors });
+    }
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+  }
+};
+
 
 const createProduct = async (req, res) => {
   try {
@@ -113,5 +147,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-
+  deleteProducts
 };

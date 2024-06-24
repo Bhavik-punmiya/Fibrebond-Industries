@@ -89,11 +89,27 @@ const getProductImage = async (req, res) => {
   }
 };
 
+const deleteImageById = async (imageId) => {
+  const gfs = getGfsProductImages();
+  if (!gfs) {
+    throw new Error('GridFS for product images not initialized');
+  }
+
+  try {
+    const fileId = new mongoose.Types.ObjectId(imageId);
+    await gfs.delete(fileId);
+  } catch (err) {
+    throw new Error(`Error deleting image: ${err.message}`);
+  }
+};
+
+
 module.exports = {
   upload: upload.single('file'),
   uploadFile,
   getFile,
   uploadprod: uploadprod.single('file'),
   uploadProductImage,
-  getProductImage
+  getProductImage,
+  deleteImageById
 };
