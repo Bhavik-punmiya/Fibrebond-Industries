@@ -1,11 +1,13 @@
 const { GridFSBucket } = require('mongodb');
-let gfs, gridfsBucket;
+
+let gfsUploads, gfsProductImages;
 
 const initGridFS = (conn) => {
-  gridfsBucket = new GridFSBucket(conn.db, { bucketName: 'uploads' });
-  gfs = gridfsBucket;
+  gfsUploads = new GridFSBucket(conn.db, { bucketName: 'uploads' });
+  gfsProductImages = new GridFSBucket(conn.db, { bucketName: 'productImages' });
 };
 
-const getGfs = () => gfs;
+const getGfsUploads = () => gfsUploads;
+const getGfsProductImages = () => gfsProductImages;
 
-module.exports = { initGridFS, getGfs };
+module.exports = { initGridFS, getGfsUploads, getGfsProductImages };

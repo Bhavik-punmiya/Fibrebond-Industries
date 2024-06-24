@@ -5,8 +5,8 @@ import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/r
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 import makeAnimated from 'react-select/animated';
 import Select from 'react-select';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -54,9 +54,9 @@ const thumbnails = [
 
 const TableTwo = () => {
   const [checkedItems, setCheckedItems] = useState([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // For adding a new family
-  const [mainImage, setMainImage] = useState("https://ecommerce-product-page-bravonoid.vercel.app/images/image-product-4.jpg");
-;
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [mainImage, setMainImage] = useState("");
+  const [thumbnails, setThumbnails] = useState([]);
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [shortDescription, setShortDescription] = useState('');
@@ -69,11 +69,9 @@ const TableTwo = () => {
   const [plans, setPlans] = useState([]);
   const [selectedPlans, setSelectedPlans] = useState([]);
   const [productData, setProductData] = useState([]);
-
-
+  const [imageFiles, setImageFiles] = useState([]);
 
   const animatedComponents = makeAnimated();
-
 
   const handleCheckboxChange = (index) => {
     setCheckedItems((prev) => {
@@ -85,16 +83,12 @@ const TableTwo = () => {
     });
   };
 
-
-
   function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
+    return classes.filter(Boolean).join(' ');
   }
 
   const openAddModal = () => {
     setIsAddModalOpen(true);
- 
-    setNewFamilyName('');
   };
 
   const fetchProducts = async () => {
@@ -107,11 +101,8 @@ const TableTwo = () => {
       setProductData(data);
     } catch (error) {
       console.error('Error fetching products:', error);
-      // Handle error as needed, e.g., show an error message
     }
   };
-
-  fetchProducts();
 
   const fetchPlans = async () => {
     try {
@@ -123,45 +114,77 @@ const TableTwo = () => {
     }
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
 
-    const newProduct = {
-      name: productName,
-      price: productPrice,
-      shortDescription: shortDescription,
-      description: description,
-      isTaxApplicable: isTaxApplicable,
-      stockQuantity: stockQuantity,
-      isInStock: isInStock,
-      weight: weight,
-      dimensions: dimensions,
-      plans: selectedPlans.map(plan => plan.value),
-    };
+    try {
+      // First upload images and get their IDs
+      const uploadedImageIds = await Promise.all(
+        imageFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          const response = await axios.post('http://localhost:5000/api/v1/uploads/product/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          return response.data.file.id;
+        })
+      );
 
-    // Submit the new product
-    axios.post('http://localhost:5000/api/v1/products', newProduct)
-      .then(response => {
-        console.log('Product added successfully:', response.data);
-        setIsAddModalOpen(false);
-      })
-      .catch(error => console.error('Error adding product:', error));
+      console.log(uploadedImageIds);
+
+      const newProduct = {
+        name: productName,
+        price: productPrice,
+        shortDescription: shortDescription,
+        description: description,
+        isTaxApplicable: isTaxApplicable,
+        stockQuantity: stockQuantity,
+        isInStock: isInStock,
+        weight: weight,
+        dimensions: dimensions,
+        plans: selectedPlans.map(plan => plan.value),
+        images: uploadedImageIds, // Save image IDs
+      };
+
+      console.log(newProduct);
+
+      // Submit the new product
+      const response = await axios.post('http://localhost:5000/api/v1/products', newProduct);
+
+      console.log('Product added successfully:', response.data);
+      toast.success("Product Added Successfully", { position: "top-center", });
+      setIsAddModalOpen(false);
+      await fetchProducts(); // Refresh product list
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast.error(error, { position: "top-center", });
+    }
   };
-
 
 
   const handleImageClick = (image) => {
     setMainImage(image);
   };
 
-
+  const handleImageChange = (e) => {
+    setImageFiles([...e.target.files]);
+    const fileUrls = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+    setThumbnails(fileUrls);
+    if (fileUrls.length > 0) {
+      setMainImage(fileUrls[0]);
+    } else {
+      setMainImage(""); // Clear mainImage if no files selected
+    }
+  };
   useEffect(() => {
     fetchPlans();
+    fetchProducts();
   }, []);
-
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <ToastContainer />
+
       <div className="px-4 py-6 md:px-6 xl:px-7.5 items-start justify-between md:flex">
         <div className="max-w-lg">
           <h4 className="text-xl font-semibold text-black dark:text-white">
@@ -369,69 +392,77 @@ const TableTwo = () => {
 
       <div className="px-2 rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
-        <table className="w-full table-auto">
-      <thead>
-        <tr className="bg-gray-2 text-left dark:bg-meta-4">
-          <th className="min-w-[80px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-            CheckBox
-          </th>
-          <th className="min-w-[240px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
-            Product Name
-          </th>
-          <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
-            Plans
-          </th>
-          <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-            Price
-          </th>
-          <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
-            Stock Quantity
-          </th>
-          <th className="px-4 py-4 font-medium text-black dark:text-white">
-            Actions
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {productData.map((product, index) => (
-          <tr key={product._id}>
-            <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
-              <input
-                type="checkbox"
-                id={`checkbox${index}`}
-                className="sr-only"
-                // Implement checked state and onChange handler if needed
-              />
-              <div
-                className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${
-                  false /* Replace with checked state logic */
-                    ? 'border-primary bg-gray dark:bg-transparent'
-                    : 'border-gray-300'
-                }`}
-              >
-                {/* Replace with your SVG for checked state */}
-              </div>
-            </td>
-            <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="h-12.5 w-15 rounded-md">
-                  {/* Assuming product.image is a URL to your product image */}
-                  <Image src={product.image || '/images/product/product-01.png'} width={60} height={50} alt="Product" />
-                </div>
-                <p className="text-sm text-black dark:text-white">{product.name}</p>
-              </div>
-            </td>
-            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-              <p className="text-black dark:text-white">{product.plans.join(', ')}</p>
-            </td>
-            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-              <p className="text-black dark:text-white">{product.price}</p>
-            </td>
-            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-              <p className="text-black dark:text-white">{product.stockQuantity}</p>
-            </td>
-            <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
-              <div className="flex items-center space-x-3.5">
+          <table className="w-full table-auto">
+            <thead>
+              <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                <th className="min-w-[80px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
+                  CheckBox
+                </th>
+                <th className="min-w-[240px] px-4 py-4 font-medium text-black dark:text-white xl:pl-11">
+                  Product Name
+                </th>
+                <th className="min-w-[150px] px-4 py-4 font-medium text-black dark:text-white">
+                  Plans
+                </th>
+                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
+                  Price
+                </th>
+                <th className="min-w-[120px] px-4 py-4 font-medium text-black dark:text-white">
+                  Stock Quantity
+                </th>
+                <th className="px-4 py-4 font-medium text-black dark:text-white">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {productData.map((product, index) => (
+                <tr key={product._id}>
+                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-11">
+                    <input
+                      type="checkbox"
+                      id={`checkbox${index}`}
+                      className="sr-only"
+                    // Implement checked state and onChange handler if needed
+                    />
+                    <div
+                      className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${false /* Replace with checked state logic */
+                        ? 'border-primary bg-gray dark:bg-transparent'
+                        : 'border-gray-300'
+                        }`}
+                    >
+                      {/* Replace with your SVG for checked state */}
+                    </div>
+                  </td>
+                  <td className="border-b border-[#eee] px-4 py-5 pl-9 dark:border-strokedark xl:pl-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                      <div className="h-12.5 w-15 rounded-md">
+                        {/* Assuming product.image is a URL to your product image */}
+
+                        <Image
+                          src={product.images && product.images.length > 0
+                            ? `http://localhost:5000/api/v1/uploads/product/${product.images[0]}`
+                            : '/images/product/product-01.png'}
+                          width={60}
+                          height={50}
+                          alt="Product"
+                        />
+
+                      </div>
+                      <p className="text-sm text-black dark:text-white">{product.name}</p>
+                    </div>
+                  </td>
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    <p className="text-black dark:text-white">{product.plans.join(', ')}</p>
+                  </td>
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    <p className="text-black dark:text-white">{product.price}</p>
+                  </td>
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    <p className="text-black dark:text-white">{product.stockQuantity}</p>
+                  </td>
+                  <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+                    <div className="flex items-center space-x-3.5">
                       <button className="hover:text-primary">
                         <svg
                           className="fill-current"
@@ -508,196 +539,224 @@ const TableTwo = () => {
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
           <Dialog.Content className="fixed top-[55%] left-[60%] transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-md shadow-lg p-8 min-w-[75%] max-h-[75%] overflow-y-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
-            <form onSubmit={handleAddSubmit}>
-      <h2 className="text-lg font-bold mb-4">Add New Product</h2>
+              <div>
+                <form onSubmit={handleAddSubmit}>
+                  <h2 className="text-lg font-bold mb-4">Add New Product</h2>
 
-      <div>
-        <label className="block text-sm font-medium leading-6 text-gray-900">Product Name</label>
-        <div className="mt-2">
-          <input
-            type="text"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-            placeholder="Enter Product Name"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
+                  <div>
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Product Name</label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)}
+                        placeholder="Enter Product Name"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
 
-      <div className="mt-3">
-        <label className="block text-sm font-medium leading-6 text-gray-900">Product Price</label>
-        <div className="mt-2">
-          <input
-            type="text"
-            value={productPrice}
-            onChange={(e) => setProductPrice(e.target.value)}
-            placeholder="Enter Product Price"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
-      <div className="mt-3">
-        <label className="block text-sm font-medium leading-6 text-gray-900">Select Plans</label>
-        <div className="mt-2">
-          <Select
-            isMulti
-            components={animatedComponents}
-            value={selectedPlans}
-            onChange={setSelectedPlans}
-            options={plans}
-            />
-            {/* className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" */}
-        </div>
-      </div>
-      <div className="mt-3">
-        <label className="block text-sm font-medium leading-6 text-gray-900">Short Description</label>
-        <div className="mt-2">
-          <input
-            type="text"
-            value={shortDescription}
-            onChange={(e) => setShortDescription(e.target.value)}
-            placeholder="Enter Short Description"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Product Price</label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={productPrice}
+                        onChange={(e) => setProductPrice(e.target.value)}
+                        placeholder="Enter Product Price"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Select Plans</label>
+                    <div className="mt-2">
+                      <Select
+                        isMulti
+                        components={animatedComponents}
+                        value={selectedPlans}
+                        onChange={setSelectedPlans}
+                        options={plans}
+                      />
+                      {/* className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" */}
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Short Description</label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={shortDescription}
+                        onChange={(e) => setShortDescription(e.target.value)}
+                        placeholder="Enter Short Description"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
 
-      <div className="col-span-full mt-3">
-        <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">Description</label>
-        <div className="mt-2">
-          <textarea
-            id="description"
-            name="description"
-            rows={6}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Write a detailed description of the product."
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          ></textarea>
-        </div>
-      </div>
+                  <div className="col-span-full mt-3">
+                    <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">Description</label>
+                    <div className="mt-2">
+                      <textarea
+                        id="description"
+                        name="description"
+                        rows={6}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Write a detailed description of the product."
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      ></textarea>
+                    </div>
+                  </div>
 
-      <div className="mt-3 space-y-6">
-        <div className="relative flex gap-x-3">
-          <div className="flex h-6 items-center">
-            <input
-              id="tax-applicable"
-              name="tax-applicable"
-              type="checkbox"
-              checked={isTaxApplicable}
-              onChange={() => setIsTaxApplicable(!isTaxApplicable)}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-            />
-          </div>
-          <div className="text-sm leading-6">
-            <label htmlFor="tax-applicable" className="font-medium text-gray-900">Tax Applicable</label>
-            <p className="text-gray-500">Check if tax is applicable to this product.</p>
-          </div>
-        </div>
-      </div>
+                  <div className="mt-3 space-y-6">
+                    <div className="relative flex gap-x-3">
+                      <div className="flex h-6 items-center">
+                        <input
+                          id="tax-applicable"
+                          name="tax-applicable"
+                          type="checkbox"
+                          checked={isTaxApplicable}
+                          onChange={() => setIsTaxApplicable(!isTaxApplicable)}
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        />
+                      </div>
+                      <div className="text-sm leading-6">
+                        <label htmlFor="tax-applicable" className="font-medium text-gray-900">Tax Applicable</label>
+                        <p className="text-gray-500">Check if tax is applicable to this product.</p>
+                      </div>
+                    </div>
+                  </div>
 
-      <div className="mt-3">
-        <label className="block text-sm font-medium leading-6 text-gray-900">Stock Quantity</label>
-        <div className="mt-2">
-          <input
-            type="text"
-            value={stockQuantity}
-            onChange={(e) => setStockQuantity(e.target.value)}
-            placeholder="Enter Stock Quantity"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Stock Quantity</label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={stockQuantity}
+                        onChange={(e) => setStockQuantity(e.target.value)}
+                        placeholder="Enter Stock Quantity"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
 
-      <div className="mt-6 space-y-6">
-        <div className="relative flex gap-x-3">
-          <div className="flex h-6 items-center">
-            <input
-              id="in-stock"
-              name="in-stock"
-              type="checkbox"
-              checked={isInStock}
-              onChange={() => setIsInStock(!isInStock)}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-            />
-          </div>
-          <div className="text-sm leading-6">
-            <label htmlFor="in-stock" className="font-medium text-gray-900">In Stock</label>
-            <p className="text-gray-500">Check if this product is currently in stock.</p>
-          </div>
-        </div>
-      </div>
+                  <div className="mt-6 space-y-6">
+                    <div className="relative flex gap-x-3">
+                      <div className="flex h-6 items-center">
+                        <input
+                          id="in-stock"
+                          name="in-stock"
+                          type="checkbox"
+                          checked={isInStock}
+                          onChange={() => setIsInStock(!isInStock)}
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        />
+                      </div>
+                      <div className="text-sm leading-6">
+                        <label htmlFor="in-stock" className="font-medium text-gray-900">In Stock</label>
+                        <p className="text-gray-500">Check if this product is currently in stock.</p>
+                      </div>
+                    </div>
+                  </div>
 
-      <div className="mt-3">
-        <label className="block text-sm font-medium leading-6 text-gray-900">Weight</label>
-        <div className="mt-2">
-          <input
-            type="text"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="Enter Weight"
-            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Weight</label>
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        placeholder="Enter Weight"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                    </div>
+                  </div>
 
-      <div className="mt-3">
-        <label className="block text-sm font-medium leading-6 text-gray-900">Dimensions (L x B x H)</label>
-        <div className="flex items-center gap-4.5 mt-2">
-          <input
-            type="text"
-            value={dimensions.length}
-            onChange={(e) => setDimensions({ ...dimensions, length: e.target.value })}
-            placeholder="Length"
-            className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-          <input
-            type="text"
-            value={dimensions.breadth}
-            onChange={(e) => setDimensions({ ...dimensions, breadth: e.target.value })}
-            placeholder="Breadth"
-            className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-          <input
-            type="text"
-            value={dimensions.height}
-            onChange={(e) => setDimensions({ ...dimensions, height: e.target.value })}
-            placeholder="Height"
-            className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium leading-6 text-gray-900">Dimensions (L x B x H)</label>
+                    <div className="flex items-center gap-4.5 mt-2">
+                      <input
+                        type="text"
+                        value={dimensions.length}
+                        onChange={(e) => setDimensions({ ...dimensions, length: e.target.value })}
+                        placeholder="Length"
+                        className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                      <input
+                        type="text"
+                        value={dimensions.breadth}
+                        onChange={(e) => setDimensions({ ...dimensions, breadth: e.target.value })}
+                        placeholder="Breadth"
+                        className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                      <input
+                        type="text"
+                        value={dimensions.height}
+                        onChange={(e) => setDimensions({ ...dimensions, height: e.target.value })}
+                        placeholder="Height"
+                        className="block w-full rounded-md border-0 py-1.5 text-center text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+
+                    </div>
+                  </div>
 
 
 
-      <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Product</button>
-      <button type="button" onClick={() => setIsAddModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
-    </form>
-</div>
+                  <button type="submit" className="px-4 py-2 text-white bg-indigo-600 rounded-lg duration-150 hover:bg-indigo-700 active:shadow-lg mt-4">Add Product</button>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
+                </form>
+              </div>
 
-            
+
               {/* Images Section */}
-  
-              <div className="flex items-start">
-                <div className="w-[70%] ml-[10%]">
-                  <img src={mainImage} alt="main" className="w-full rounded-xl mb-4" />
+
+              <div>
+                <div className="flex items-start">
+                  <div className={mainImage ? "w-[60%] ml-[10%]" : "hidden"}>
+                    <img src={mainImage} alt="main" className="w-full rounded-xl mb-4" />
+                  </div>
+                  <div className={mainImage ? "flex flex-col gap-2 ml-4" : "hidden"}>
+                    {thumbnails.map((thumb, index) => (
+                      <img
+                        key={index}
+                        src={thumb}
+                        alt={`thumbnail-${index}`}
+                        className={`cursor-pointer rounded-xl w-20 h-20 ${mainImage === thumb ? 'ring-2 ring-indigo-500' : ''}`}
+                        onClick={() => setMainImage(thumb)}
+                      />
+                    ))}
+                  </div>
+                  <div className={!mainImage ? "ml-[10%]  flex flex-col items-center justify-center pt-5 pb-6  w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer" : "hidden"}>
+                    <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                    </svg>
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2 ml-4">
-                  {thumbnails.map((thumb, index) => (
-                    <img
-                      key={index}
-                      src={thumb}
-                      alt={`thumbnail-${index}`}
-                      className={`cursor-pointer rounded-xl w-20 h-20 ${mainImage === thumb ? 'ring-2 ring-indigo-500' : ''}`}
-                      onClick={() => handleImageClick(thumb)}
-                    />
-                  ))}
+                <div className="mt-4">
+                  <form onSubmit={handleAddSubmit}>
+                    <div className="ml-[10%]">
+                      <label className="block mb-2">
+                        <span className="sr-only">Choose product images</span>
+                        <input
+                          type="file"
+                          className="block w-full text-sm text-gray-500 file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:disabled:opacity-50 file:disabled:pointer-events-none dark:text-neutral-500 dark:file:bg-blue-500 dark:hover:file:bg-blue-400"
+                          multiple
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    </div>
+                  </form>
                 </div>
               </div>
 
+
             </div>
-            
+
+
+
 
           </Dialog.Content>
         </Dialog.Root>

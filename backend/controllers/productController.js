@@ -73,10 +73,11 @@ const createProduct = async (req, res) => {
       inStock,
       shippingRequired,
       categories,
-      plans
+      plans,
+      images
     } = req.body;
 
-    const product = new Product({
+    const product = await new Product({
       name,
       regularPrice,
       price,
@@ -95,10 +96,11 @@ const createProduct = async (req, res) => {
       inStock,
       shippingRequired,
       categories,
-      plans
+      plans,
+      images
     });
 
-    await product.save();
+    const SavedProduct = await product.save();
     res.status(StatusCodes.CREATED).json(product);
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
