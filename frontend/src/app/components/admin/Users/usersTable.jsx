@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as Dialog from "@radix-ui/react-dialog";
 import makeAnimated from 'react-select/animated';
-import AsyncSelect from 'react-select/async';
+import Select from 'react-select';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -267,19 +267,9 @@ const usersTable = () => {
             components={animatedComponents}
             value={selectedFamilyOptions}
             onChange={handleFamilyChange}
-            options={}
+            options={familyOptions}
             />
 
-                            <AsyncSelect
-
-                                cacheOptions
-                                defaultOptions={familyOptions}
-                                loadOptions={promiseOptions}
-                                isMulti
-                                components={animatedComponents}
-                                value={selectedFamilyOptions}
-                                onChange={handleFamilyChange}
-                            />
                         </div>
 
 

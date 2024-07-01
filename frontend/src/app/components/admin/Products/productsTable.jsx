@@ -10,7 +10,11 @@ import { ToastContainer, toast } from 'react-toastify';
 import makeAnimated from 'react-select/animated';
 import Select from 'react-select';
 import * as Dialog from '@radix-ui/react-dialog';
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
 
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 const TableTwo = () => {
 
@@ -209,12 +213,12 @@ const TableTwo = () => {
 
   const addProductsToPlans = async () => {
     try {
-  
+
       const response = await axios.post('http://localhost:5000/api/v1/products/add-products-to-plans', {
         productIds: selectedProductIds,
         selectedPlans: selectedPlans.map(plan => plan.value)
       });
-  
+
       if (response.status === 200) {
         // Handle successful response
         const result = response.data;
@@ -656,15 +660,16 @@ const TableTwo = () => {
                   <div className="col-span-full mt-3">
                     <label htmlFor="description" className="block text-sm font-medium leading-6 text-gray-900">Description</label>
                     <div className="mt-2">
-                      <textarea
+
+                      <ReactQuill
                         id="description"
                         name="description"
                         rows={6}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Write a detailed description of the product."
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      ></textarea>
+                  
+                        theme="snow" />
                     </div>
                   </div>
 
@@ -880,9 +885,9 @@ const TableTwo = () => {
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
-       {/* Add selected plans to products  */}
-       <Dialog.Root open={isAddPlanModalOpen} onClose={() => setIsAddPlanModalOpen(false)}>
-       <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+        {/* Add selected plans to products  */}
+        <Dialog.Root open={isAddPlanModalOpen} onClose={() => setIsAddPlanModalOpen(false)}>
+          <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
           <Dialog.Content className="fixed top-[55%] left-[60%] transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-md shadow-lg p-8 min-w-[50%] max-h-[75%] overflow-y-auto">
             <form onSubmit={handleAddPlanSubmit}>
               <h2 className="text-lg font-bold mb-4">Add Plan to Selected Products</h2>
@@ -902,7 +907,7 @@ const TableTwo = () => {
               <button type="button" onClick={() => setIsAddPlanModalOpen(false)} className="mt-6 px-4 py-2 bg-gray-800 text-white rounded-md">Close</button>
             </form>
           </Dialog.Content>
-</Dialog.Root>
+        </Dialog.Root>
 
 
       </div>

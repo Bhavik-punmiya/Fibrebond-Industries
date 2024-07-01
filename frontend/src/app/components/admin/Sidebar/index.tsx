@@ -13,14 +13,10 @@ interface SidebarProps {
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
-  const [logoUrl, setLogoUrl] = useState("/images/logo/logo.svg");
+  const [logoUrl, setLogoUrl] = useState("/images/logo/fibrebond_logo.webp");
 
   // Function to change the logo URL
-  const changeLogoUrl = () => {
-    setLogoUrl(
-      "https://i0.wp.com/fibrebondindustries.com/wp-content/uploads/2023/10/FBI_logo_v4_185x_2x.png?fit=370%2C107&ssl=1"
-    );
-  };
+  
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);

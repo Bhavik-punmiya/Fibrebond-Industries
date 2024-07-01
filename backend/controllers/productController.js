@@ -4,7 +4,11 @@ const upload = require('../middleware/fileUploadMiddleware');
 const Product = require('../models/Product');
 const { ObjectId } = require('mongodb');
 const Plan = require('../models/Plans');
+const Family = require('../models/Family');
+const User = require('../models/UserSchema');
 const fs = require('fs');
+const mongoose = require('mongoose');
+
 const { deleteImageById } = require('./uploadController');
 
 const getAllProducts = async (req, res) => {
@@ -29,6 +33,46 @@ const getProductById = async (req, res) => {
   }
 };
 
+
+const getUserProducts = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+    // Step 1: Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'User not found' });
+    }
+
+    // Step 2: Get the families associated with the user
+    const families = await Family.find({ familyName: { $in: user.families } });
+    if (!families.length) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'No families found for the user' });
+    }
+
+    // Step 3: Get the plans associated with each family
+    const planNames = families.flatMap(family => family.plans);
+    const plans = await Plan.find({ planName: { $in: planNames } });
+    if (!plans.length) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'No plans found for the user\'s families' });
+    }
+
+    // Step 4: Merge the products from all the plans, ensuring no duplicates
+    const productIds = plans.flatMap(plan => plan.products);
+    const uniqueProductIds = [...new Set(productIds.map(id => id.toString()))];
+
+    // Step 5: Fetch and return the product details for the merged product IDs
+    const products = await Product.find({ _id: { $in: uniqueProductIds } });
+
+    res.status(StatusCodes.OK).json(products);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+  }
+};
 
 
 
@@ -247,5 +291,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   deleteProducts,
-  addProductsToPlans
+  addProductsToPlans,
+  getUserProducts
 };

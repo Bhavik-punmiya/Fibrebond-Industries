@@ -7,7 +7,8 @@ const {
   updateProduct,
   deleteProduct,
   deleteProducts,
-  addProductsToPlans
+  addProductsToPlans,
+  getUserProducts
 } = require('../controllers/productController');
 
 // GET all products
@@ -15,6 +16,9 @@ router.get('/', getAllProducts);
 
 // GET single product by ID
 router.get('/:id', getProductById);
+
+router.post('/user-products/', getUserProducts);
+
 
 // POST create a new product
 router.post('/', createProduct);

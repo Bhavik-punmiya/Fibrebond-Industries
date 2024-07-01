@@ -22,8 +22,9 @@ export default async function handler(req, res) {
 
       // Retrieve the stored JWT token
       const token = user.jwtToken;
-
+      const userId = user._id;
       // Set the token in a cookie
+      res.setHeader('Set-Cookie', serialize('userId', userId, { path: '/', httpOnly: true }));
       res.setHeader('Set-Cookie', serialize('authToken', token, { path: '/', httpOnly: true }));
 
       res.status(200).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });

@@ -1,10 +1,16 @@
 'use client'
 import React from 'react';
+import Header from '../../components/navbar.jsx';
+import Footer from '../../components/Footer.jsx';
 
 const ShoppingCart = () => {
   return (
-    <div className="container mx-auto mt-10">
-      <div className="sm:flex shadow-md my-10">
+    
+    <div className="bg-white">
+    <Header />
+  
+    <div className="px-[10%]  min-h-screen mx-auto mt-10">
+      <div className="sm:flex  my-10">
         <div className="w-full sm:w-3/4 bg-white px-10 py-10">
           <div className="flex justify-between border-b pb-8">
             <h1 className="font-semibold text-2xl">Shopping Cart</h1>
@@ -116,6 +122,8 @@ const ShoppingCart = () => {
           </div>
         </div>
       </div>
+    </div>
+    <Footer />
     </div>
   );
 };
