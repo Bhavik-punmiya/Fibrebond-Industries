@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema({
   cart_tax: { type: Number, default: 0 },
   total: { type: Number, default: 0 },
   total_tax: { type: Number, default: 0 },
-  customer_id: { type: Number },
+  customer_id: { type: String },
   billing: {
     first_name: { type: String },
     last_name: { type: String },

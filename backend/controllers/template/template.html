@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,43 +10,34 @@
             margin: 0;
             padding: 0;
         }
-
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        th,
-        td {
+        th, td {
             padding: 10px;
             border: 1px solid black;
         }
-
         .text-right {
             text-align: right;
         }
-
         .font-bold {
             font-weight: bold;
         }
-
         .text-center {
             text-align: center;
         }
-
         .invoice-header {
             display: flex;
             justify-content: space-between;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <table class="mb-0">
@@ -62,18 +52,16 @@
         <table class="mb-0">
             <tr>
                 <td class="text-sm">
-                    <p><strong>{{company.name}}</strong></p>
-                    <p>{{company.addresslane1}}</p>
-                    <p>{{company.addresslane2}}</p>
-                    <p><strong>PAN:</strong> {{company.pan}}<br>
-                        <strong>GSTIN:</strong> {{company.gstin}}
-                    </p>
+                    <p><strong>{{companyName}}</strong></p>
+                    <p>{{companyAddress}}</p>
+                    <p><strong>PAN:</strong> {{companyPAN}}<br>
+                       <strong>GSTIN:</strong> {{companyGSTIN}}</p>
                 </td>
                 <td class="text-right text-sm">
-                    <p>Invoice No: <span class="font-bold">{{invoice.number}}</span></p>
-                    <p>Invoice Date: <span class="font-bold">{{invoice.date}}</span></p>
-                    <p>Order Number: <span class="font-bold">{{invoice.orderNumber}}</span></p>
-                    <p>Order Date: <span class="font-bold">{{invoice.orderDate}}</span></p>
+                    <p>Invoice No: <span class="font-bold">{{invoiceNumber}}</span></p>
+                    <p>Invoice Date: <span class="font-bold">{{invoiceDate}}</span></p>
+                    <p>Order Number: <span class="font-bold">{{orderNumber}}</span></p>
+                    <p>Order Date: <span class="font-bold">{{orderDate}}</span></p>
                 </td>
             </tr>
         </table>
@@ -81,10 +69,10 @@
             <tr>
                 <td class="w-1/2 text-sm border">
                     <p class="font-bold">Billing Details:</p>
-                    <p>{{billing.name}}</p>
-                    <p>{{billing.address}}</p>
-                    <p><strong>Email:</strong> {{billing.email}}</p>
-                    <p><strong>Phone:</strong> {{billing.phone}}</p>
+                    <p>{{billingName}}</p>
+                    <p>{{billingAddress}}</p>
+                    <p><strong>Email:</strong> {{billingEmail}}</p>
+                    <p><strong>Phone:</strong> {{billingPhone}}</p>
                 </td>
                 <td class="w-1/2 text-sm text-center border p-2">
                     <p>View Order</p>
@@ -112,11 +100,9 @@
                 <tr>
                     <td>{{@index}}</td>
                     <td class="w-1/4">
-                        <p class="text-sm"><strong>{{this.name}}</strong><br></p>
-                        <p class="text-xs"><strong>CGST : </strong><span class="text-xs">{{this.cgst}}%</span></p>
-                        <p class="text-xs"><strong>SGST : </strong><span class="text-xs">{{this.sgst}}%</span></p>
+                        <p class="text-sm"><strong>{{this.description}}</strong><br></p>
                     </td>
-                    <td>{{this.hsn}}</td>
+                    <td>{{this.hsnSac}}</td>
                     <td>{{this.qty}}</td>
                     <td class="text-sm">₹{{this.price}}</td>
                     <td class="text-sm">₹{{this.amount}}</td>
@@ -170,5 +156,4 @@
         </table>
     </div>
 </body>
-
 </html>
