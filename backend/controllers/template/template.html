@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Invoice</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid black;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <table class="mb-0">
+            <tr class="border-black">
+                <td colspan="2" class="p-2">
+                    <div class="invoice-header pl-10 items-center w-full">
+                        <span class="flex-grow text-center font-bold text-2xl">Proforma Invoice</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <table class="mb-0">
+            <tr>
+                <td class="text-sm">
+                    <p><strong>{{company.name}}</strong></p>
+                    <p>{{company.addresslane1}}</p>
+                    <p>{{company.addresslane2}}</p>
+                    <p><strong>PAN:</strong> {{company.pan}}<br>
+                        <strong>GSTIN:</strong> {{company.gstin}}
+                    </p>
+                </td>
+                <td class="text-right text-sm">
+                    <p>Invoice No: <span class="font-bold">{{invoice.number}}</span></p>
+                    <p>Invoice Date: <span class="font-bold">{{invoice.date}}</span></p>
+                    <p>Order Number: <span class="font-bold">{{invoice.orderNumber}}</span></p>
+                    <p>Order Date: <span class="font-bold">{{invoice.orderDate}}</span></p>
+                </td>
+            </tr>
+        </table>
+        <table class="w-full table-fixed">
+            <tr>
+                <td class="w-1/2 text-sm border">
+                    <p class="font-bold">Billing Details:</p>
+                    <p>{{billing.name}}</p>
+                    <p>{{billing.address}}</p>
+                    <p><strong>Email:</strong> {{billing.email}}</p>
+                    <p><strong>Phone:</strong> {{billing.phone}}</p>
+                </td>
+                <td class="w-1/2 text-sm text-center border p-2">
+                    <p>View Order</p>
+                    <img src="{{qrCode}}" alt="QR Code" style="display: block; margin: 0 auto;">
+                </td>
+            </tr>
+        </table>
+        <table class="mb-0 border-collapse border-t border-gray-200">
+            <thead class="border-t border-gray-200">
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center">Items</th>
+                    <th class="text-center">HSN/SAC</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-center">Price</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Discount</th>
+                    <th class="text-center">CGST</th>
+                    <th class="text-center">SGST</th>
+                    <th class="text-center">Total</th>
+                </tr>
+            </thead>
+            <tbody class="border-t border-gray-200">
+                {{#each items}}
+                <tr>
+                    <td>{{@index}}</td>
+                    <td class="w-1/4">
+                        <p class="text-sm"><strong>{{this.name}}</strong><br></p>
+                        <p class="text-xs"><strong>CGST : </strong><span class="text-xs">{{this.cgst}}%</span></p>
+                        <p class="text-xs"><strong>SGST : </strong><span class="text-xs">{{this.sgst}}%</span></p>
+                    </td>
+                    <td>{{this.hsn}}</td>
+                    <td>{{this.qty}}</td>
+                    <td class="text-sm">₹{{this.price}}</td>
+                    <td class="text-sm">₹{{this.amount}}</td>
+                    <td class="text-sm">₹{{this.discount}}</td>
+                    <td class="text-sm">₹{{this.cgst}}</td>
+                    <td class="text-sm">₹{{this.sgst}}</td>
+                    <td class="text-sm">₹{{this.total}}</td>
+                </tr>
+                {{/each}}
+                <tr class="text-sm">
+                    <td colspan="3" class="text-left text-sm w-1/2 font-bold">Total</td>
+                    <td>{{totals.qty}}</td>
+                    <td>₹{{totals.price}}</td>
+                    <td></td>
+                    <td>₹{{totals.discount}}</td>
+                    <td>₹{{totals.cgst}}</td>
+                    <td>₹{{totals.sgst}}</td>
+                    <td>₹{{totals.grandTotal}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="mb-0 text-sm">
+            <tr>
+                <td class="text-left w-3/4">
+                    <strong>Total Amount in Words:</strong>
+                    <span>{{totals.totalInWords}}</span>
+                </td>
+                <td class="text-left">
+                    <div class="invoice-header">
+                        <strong>Grand Total:</strong>
+                        <span>₹{{totals.grandTotal}}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <table class="mb-0">
+            <tr class="h-16">
+                <td class="col-span-3/4"></td>
+                <td class="col-span-1/4 w-1/4 text-center text-sm">
+                    <p>Fibre Bond Industries</p>
+                    <p>Authorized Signatory</p>
+                </td>
+            </tr>
+        </table>
+        <table class="mb-0">
+            <tr>
+                <td class="col-span-1/4 w-1/4 text-left text-sm">
+                    <p>This is a computer-generated invoice, no signature required.</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

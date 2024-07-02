@@ -1,5 +1,6 @@
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/Users';
+import Cart from '../../../models/CartSchema';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
@@ -10,7 +11,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const { name, email, password } = req.body;
-
+    console.log(req.body)
     try {
       let user = await User.findOne({ email });
       if (user) {
@@ -18,8 +19,11 @@ export default async function handler(req, res) {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const userId = new mongoose.Types.ObjectId();
+      
+      // Create a new user
       user = new User({
-        _id: new mongoose.Types.ObjectId(),
+        _id: userId,
         name,
         email,
         password: hashedPassword,
@@ -30,8 +34,30 @@ export default async function handler(req, res) {
 
       // Store the token in the user's document
       user.jwtToken = token;
-      await user.save();
 
+      // Save the user
+      const userresponse = await user.save();
+      console.log(userresponse , 
+        "user created"
+      )
+      // Create a cart for the new user
+      const cart = new Cart({
+        _id: userId,
+        items: [],
+        totals: {
+          qty: 0,
+          price: 0.0,
+          discount: 0.0,
+          cgst: 0.0,
+          sgst: 0.0,
+          grandTotal: 0.0,
+          totalInWords: '',
+        },
+      });
+
+      // Save the cart
+      const cartresponse = await cart.save();
+      console.log(cartresponse)
       // Set the token in a cookie
       res.setHeader('Set-Cookie', serialize('authToken', token, { path: '/', httpOnly: true }));
 

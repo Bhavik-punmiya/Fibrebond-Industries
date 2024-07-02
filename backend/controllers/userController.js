@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const User = require('../models/UserSchema'); // Import the User schema
-const {StatusCodes} = require('http-status-codes');
+const Cart = require('../models/cartSchema'); // Import the Cart schema
+const { StatusCodes } = require('http-status-codes');
+
 // @desc    Get all users
 // @route   GET /api/v1/users
 // @access  Public
@@ -26,6 +28,24 @@ const getUser = async (req, res) => {
     res.status(StatusCodes.OK).json({ user });
   } catch (error) {
     res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
+  }
+};
+
+// @desc    Create a new user
+// @route   POST /api/v1/users
+// @access  Public
+const createUser = async (req, res) => {
+  try {
+    const user = new User(req.body);
+    await user.save();
+
+    // Create a cart for the new user
+    const cart = new Cart({ _id: user._id });
+    await cart.save();
+
+    res.status(StatusCodes.CREATED).json({ user });
+  } catch (error) {
+    res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
 
@@ -56,15 +76,24 @@ const deleteUser = async (req, res) => {
     if (!user) {
       throw new CustomError.NotFoundError('User not found');
     }
-    res.status(StatusCodes.OK).json({ message: 'User deleted successfully' });
+
+    // Delete the cart for the deleted user
+    await Cart.findByIdAndDelete(user._id);
+
+    res.status(StatusCodes.OK).json({ message: 'User and associated cart deleted successfully' });
   } catch (error) {
     res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 };
 
+
+
+
 module.exports = {
   getAllUsers,
   getUser,
+  createUser,
   updateUser,
   deleteUser,
+  
 };

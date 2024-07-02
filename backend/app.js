@@ -12,6 +12,7 @@ const connectDB = require('./db/connect');
 
 // Routes
 const orderRouter = require('./routes/orderRoutes');
+const cartRouter =  require('./routes/cartRoutes');
 const productRouter = require('./routes/productRoutes');
 const customerRouter = require('./routes/customerRoutes');
 const uploadRouter = require('./routes/uploadRoutes');
@@ -19,6 +20,7 @@ const roleRoutes = require('./routes/rolesRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const userRoutes = require('./routes/userRoutes');
 const plansRoutes = require('./routes/plansRoutes');
+const invoiceRoutes = require('./routes/invoiceRouter')
 
 // Middleware
 const notFoundMiddleware = require('./middleware/not-found');
@@ -31,11 +33,13 @@ app.use(cors()); // Use cors middleware
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/uploads', uploadRouter);
 app.use('/api/v1/roles', roleRoutes);
 app.use('/api/v1/family', familyRoutes);
 app.use('/api/v1/plans', plansRoutes);
+app.use('/api/v1/invoices', invoiceRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
