@@ -11,7 +11,7 @@ const { initGridFS } = require('./utils/gridfsConfig'); // Import GridFS configu
 const connectDB = require('./db/connect');
 
 // Routes
-const orderRouter = require('./routes/orderRoutes');
+const orderRouter = require('./routes/orderRouter');
 const cartRouter =  require('./routes/cartRoutes');
 const productRouter = require('./routes/productRoutes');
 const customerRouter = require('./routes/customerRoutes');

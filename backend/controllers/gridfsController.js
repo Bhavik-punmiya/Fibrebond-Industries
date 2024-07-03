@@ -43,8 +43,7 @@ const uploadInvoiceFromPath = (filePath, filename, res) => {
     .on('finish', () => {
       res.status(201).json({ message: 'Invoice generated and uploaded successfully' });
     });
-};
-const getInvoiceFile = async (req, res) => {
+};const getInvoiceFile = async (req, res) => {
   console.log('getInvoiceFile called');
   const gfs = getGfsInvoices();
   if (!gfs) {
@@ -53,16 +52,16 @@ const getInvoiceFile = async (req, res) => {
   }
 
   try {
-    const fileId = new mongoose.Types.ObjectId(req.params.id);
-    console.log(`Searching for invoice file with ID: ${fileId}`);
-    const file = await gfs.find({ _id: fileId }).toArray();
+    const filename = req.params.id + '.pdf'; // Construct the filename with .pdf extension
+    console.log(`Searching for invoice file with filename: ${filename}`);
+    const file = await gfs.find({ filename }).toArray();
 
     if (!file || file.length === 0) {
       console.error('Invoice file not found');
       return res.status(404).json({ error: 'Invoice file not found' });
     }
 
-    const readstream = gfs.openDownloadStream(fileId);
+    const readstream = gfs.openDownloadStream(file[0]._id); // Use file _id to open download stream
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="' + file[0].filename + '"');
     readstream.pipe(res);
