@@ -6,6 +6,9 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import DeleteSingleModal from './DeleteSingleModal';
 import BatchDeleteModal from './BatchDeleteModal';
 import BatchOrderStatusUpdateModal from './BatchOrderStatusUpdateModal'; // Im
+import OrderDetailsSummaryModal from './OrderDetailsSummaryModal';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 
 const OrdersTable = () => {
   const [orders, setOrders] = useState([]);
@@ -15,7 +18,9 @@ const OrdersTable = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
   const [isBatchStatusModalOpen, setIsBatchStatusModalOpen] = useState(false); // State for Batch Order Status Update Modal
-  // Order Table
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
   const fetchOrdersTable = async () => {
     try {
       const response = await axios.get('http://localhost:5000/api/v1/orders/table/details');
@@ -28,13 +33,8 @@ const OrdersTable = () => {
 
   // Three Action Buttons 
   const fetchSingleOrderData = async (id) => {
-    try {
-      console.log(id)
-      const response = await axios.get(`http://localhost:5000/api/v1/orders/single/${id}`);
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error fetching single order data:', error);
-    }
+    setSelectedOrderId(id);
+    setIsDetailsModalOpen(true);
   };
 
   const handleDeleteClick = () => {
@@ -45,15 +45,17 @@ const OrdersTable = () => {
     try {
       await axios.delete(`http://localhost:5000/api/v1/orders/single/${selectedOrderId}`);
       console.log(`Order ${selectedOrderId} deleted successfully`);
+      toast.success('Order Deleted', { position: 'top-center' })
       setIsDeleteModalOpen(false); // Close modal after deletion
       fetchOrdersTable(); // Refresh orders after deletion
     } catch (error) {
+      toast.error(error, { position: 'top-center' })
       console.error('Error deleting order:', error);
     }
   };
 
   const viewInvoice = (id) => {
-    window.open(`http://localhost:5000/api/v1/invoices/${id}`, '_blank');
+    window.open(`http://localhost:5000/api/v1/invoices/pdf/${id}`, '_blank');
   };
 
   // Drop Down Menu 
@@ -61,9 +63,11 @@ const OrdersTable = () => {
     try {
       await axios.post('http://localhost:5000/api/v1/orders/batch/delete', { orderIds: selectedOrderIds });
       console.log('Batch delete successful');
+      toast.success('Orders Deleted', { position: 'top-center' })
       setIsBatchDeleteModalOpen(false); // Close modal after deletion
       fetchOrdersTable(); // Refresh orders after deletion
     } catch (error) {
+      toast.error(error, { position: 'top-center' })
       console.error('Error deleting orders:', error);
     }
   };
@@ -82,10 +86,12 @@ const OrdersTable = () => {
         orderIds: selectedOrderIds,
         status: status
       });
+      toast.success('Status Updated', { position: 'top-center' })
       console.log(`Batch status update to '${status}' successful`);
       setIsBatchStatusModalOpen(false); // Close modal after update
       fetchOrdersTable(); // Refresh orders after update
     } catch (error) {
+      toast.error(error, { position: 'top-center' })
       console.error('Error updating batch order status:', error);
     }
   };
@@ -145,6 +151,7 @@ const OrdersTable = () => {
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+          <ToastContainer />
       <div className="px-4 py-6 md:px-6 xl:px-7.5 items-start justify-between md:flex space-x-4">
         <h4 className="text-xl font-semibold text-black dark:text-white">
           Products
@@ -210,7 +217,7 @@ const OrdersTable = () => {
                         className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
                           } block w-full text-left px-4 py-2 text-sm`}
                       >
-                        Update Status 
+                        Update Status
                       </button>
                     )}
                   </Menu.Item>
@@ -327,7 +334,7 @@ const OrdersTable = () => {
           <div className="mt-3 md:mt-0">
             {/* // onClick={openAddModal} */}
             <button
-              className="inline-block px-4 py-2 text-white duration-150 font-medium bg-indigo-600 rounded-lg hover:bg-indigo-500 active:bg-indigo-700 md:text-sm"
+              className="inline-block px-4 py-2 text-white duration-150 font-medium bg-indigo-600 rounded-lg hover:bg-indigo-500 active:bg-indigo-700 md:text-sm sm:text-sm"
             >
               Add Product
             </button>
@@ -467,7 +474,7 @@ const OrdersTable = () => {
                         />
                       </svg>
                     </button>
-                    <button className="hover:text-primary" onClick={handleDeleteClick}>
+                    <button className="hover:text-primary" onClick={() => viewInvoice(order.orderId)}>
                       <svg
                         className="fill-current"
                         width="18"
@@ -507,6 +514,11 @@ const OrdersTable = () => {
         isOpen={isBatchStatusModalOpen}
         onClose={() => setIsBatchStatusModalOpen(false)}
         onUpdateStatus={handleBatchStatusUpdate}
+      />
+      <OrderDetailsSummaryModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        orderId={selectedOrderId}
       />
     </div>
   );

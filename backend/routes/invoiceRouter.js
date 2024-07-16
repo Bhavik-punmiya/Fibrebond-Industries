@@ -3,6 +3,7 @@
 const express = require('express');
 const { uploadInvoiceFile, getInvoiceFile } = require('../controllers/gridfsController');
 const { generateInvoice } = require('../controllers/invoiceController');
+const { createProformaInvoice, getProformaInvoice } = require('../controllers/proformInvoiceController');
 
 const router = express.Router();
 
@@ -13,6 +14,14 @@ router.post('/generate', generateInvoice);
 router.post('/upload-invoice', uploadInvoiceFile);
 
 // Route for retrieving an invoice by ID
-router.get('/:id', getInvoiceFile);
+router.get('/pdf/:id', getInvoiceFile);
+
+
+
+router.post('/proforma-invoices', createProformaInvoice);
+
+router.get('/proforma-invoices', getProformaInvoice);
 
 module.exports = router;
+
+

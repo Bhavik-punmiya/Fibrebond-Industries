@@ -6,7 +6,7 @@ import ProductPageCards from "@/components/Products/cards/productpageCards";
 const  OrdersPage = () => {
     return (
         <DefaultLayout>
-        <Breadcrumb pageName='Products' />
+        <Breadcrumb pageName='Orders' />
         <ProductPageCards />
         <OrdersTable />
       </DefaultLayout>

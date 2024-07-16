@@ -59,4 +59,10 @@ const generateInvoice = async (req, res) => {
   });
 };
 
-module.exports = { generateInvoice };
+
+
+module.exports = { 
+  generateInvoice,
+
+
+};
